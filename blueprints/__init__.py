@@ -14,6 +14,7 @@ app = Flask(__name__)
 ### Konfigurasi database
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'SFsieaaBsLEpecP675r243faM8oSB2hV'
@@ -46,8 +47,19 @@ jwt = JWTManager(app)
 def add_claims_to_access_token(identity):
     return identity
 
+<<<<<<< HEAD
 from blueprints.feedLike.resources import bp_feedLike
 
 app.register_blueprint(bp_feedLike, url_prefix='/feedlike')
+=======
+from blueprints.PostFeed.resources import bp_feed
+
+from blueprints.auth import bp_auth
+from blueprints.users.resources import bp_users
+
+app.register_blueprint(bp_feed, url_prefix='/feed')
+app.register_blueprint(bp_auth, url_prefix='/login')
+app.register_blueprint(bp_users, url_prefix='/api/users')
+>>>>>>> dev
 
 db.create_all()
