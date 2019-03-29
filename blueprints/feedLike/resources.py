@@ -15,22 +15,21 @@ class FeedLikeResource(Resource):
         pass
 
     # @jwt_required
-    def get(self, id_feed):
-        qry = FeedLike.query.all()
-        # qry = qry.filter(FeedLike.id_feed == id_feed)
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('id_feed', type = int, location = 'args')
+        args = parser.parse_args()
+        # jwtClaims = get_jwt_claims()
 
-        # rows = []
-        # for row in qry:
-            # print(row)
+        # id_member = jwtClaims['id_member']
+
+        qry = FeedLike.query.filter_by(id_feed = args['id_feed']).all()
         feeds = marshal(qry, FeedLike.response_field)
-        # rows.append(feeds)
-        feed = {}
-        feed['like'] = feeds
-        feed['total'] = len(feeds)
-        if feeds is not None:
-            return feed, 200, {'Content_type' : 'application/json'}
+
+        if qry is not None:
+            return feeds, 200, {'Content_type' : 'application/json'}
         else:
-            return {'status' : 'NOT_FOUND', 'test': marshal(FeedLike.query, FeedLike.response_field)}, 500, {'Content_type' : 'application/json'}
+            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
    
     # @jwt_required
     def post(self):
@@ -52,8 +51,8 @@ class FeedLikeResource(Resource):
         return feed, 200, {'Content_type' : 'application/json'}
     
     # @jwt_required
-    def put(self, id_feed):
-        qry = FeedLike.query.get(id_feed)
+    def put(self, id_like):
+        qry = FeedLike.query.get(id_like)
         parser = reqparse.RequestParser()
         parser.add_argument('id_feed', location = 'json')
         parser.add_argument('liked_by', location = 'json')
@@ -72,19 +71,19 @@ class FeedLikeResource(Resource):
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
-    # # @jwt_required
-    # def delete(self, id_feed):
-    #     qry = Feeds.query.get(id_feed)
+    # @jwt_required
+    def delete(self, id_like):
+        qry = FeedLike.query.get(id_like)
 
-    #     db.session.delete(qry)
-    #     db.session.commit()
+        db.session.delete(qry)
+        db.session.commit()
 
-    #     if qry is not None:
-    #         return 'Deleted', 200, {'Content_type' : 'application/json'}
-    #     else:
-    #         return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
+        if qry is not None:
+            return 'Deleted', 200, {'Content_type' : 'application/json'}
+        else:
+            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
-    # def options(self, id_feed = None):
-    #     return {}, 200
+    def options(self, id_like = None):
+        return {}, 200
 
-api.add_resource(FeedLikeResource, '', '/<int:id_feed>')
+api.add_resource(FeedLikeResource, '', '/<int:id_like>')
