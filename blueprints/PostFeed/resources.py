@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 
 from . import *
+from blueprints.users import *
 
 bp_feed = Blueprint('feed', __name__)
 api = Api(bp_feed)
@@ -14,7 +15,6 @@ class FeedResource(Resource):
     def __init__(self):
         pass
 
-    # @jwt_required
     def get(self, id_feed = None):
         if id_feed == None:
             parser = reqparse.RequestParser()
@@ -35,31 +35,31 @@ class FeedResource(Resource):
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
                 feeds = marshal(row, Feeds.response_field)
-                # users = Users.query.get(row.user_id)
-                # feeds['user'] = marshal(users, Users.response_field)
+                users = Users.query.get(row.id_user)
+                feeds['user'] = marshal(users, Users.response_field)
                 rows.append(feeds)
             return rows, 200, {'Content_type' : 'application/json'}
         else:
             qry = Feeds.query.get(id_feed)
             feeds = marshal(qry, Feeds.response_field)
-            # users = Users.query.get(qry.user_id)
-            # feeds['user'] = marshal(users, Users.response_field)
+            users = Users.query.get(qry.id_user)
+            feeds['user'] = marshal(users, Users.response_field)
             if qry is not None:
                 return feeds, 200, {'Content_type' : 'application/json'}
             else:
                 return {'status' : 'NOT_FOUND'}, 404, {'Content_type' : 'application/json'}
    
-    # @jwt_required
+    @jwt_required
     def post(self):
-        # jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
+        jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
         parser = reqparse.RequestParser()
         parser.add_argument('content', location = 'json')
         parser.add_argument('tag', location = 'json')
         parser.add_argument('image', location = 'json')
         args = parser.parse_args()
 
-        # id_user = jwtClaims['client_id']
-        id_user = 1
+        id_user = jwtClaims['id']
+        # id_user = 1
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
@@ -68,12 +68,12 @@ class FeedResource(Resource):
         db.session.commit()
 
         feed = marshal(feeds, Feeds.response_field)
-        # users = Users.query.get(args['id'])
-        # feed['user'] = marshal(users, Users.response_field)
+        users = Users.query.get(id_user)
+        feed['user'] = marshal(users, Users.response_field)
         
         return feed, 200, {'Content_type' : 'application/json'}
     
-    # @jwt_required
+    @jwt_required
     def put(self, id_feed):
         qry = Feeds.query.get(id_feed)
         parser = reqparse.RequestParser()
@@ -92,12 +92,17 @@ class FeedResource(Resource):
         qry.updated_at = datetime.datetime.now()
 
         db.session.commit()
+
+        feeds = marshal(qry, Feeds.response_field)
+        users = Users.query.get(qry.id_user)
+        feeds['user'] = marshal(users, Users.response_field)
+
         if qry is not None:
-            return marshal(qry, Feeds.response_field), 200, {'Content_type' : 'application/json'}
+            return feeds, 200, {'Content_type' : 'application/json'}
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
-    # @jwt_required
+    @jwt_required
     def delete(self, id_feed):
         qry = Feeds.query.get(id_feed)
 

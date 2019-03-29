@@ -27,7 +27,7 @@ class Users(db.Model):
     response_field = {
         "id" : fields.Integer,
         "username" : fields.String,
-        "password" : fields.String,
+        # "password" : fields.String,
         "email" : fields.String,
         "display_name" : fields.String,
         "headline" : fields.String,
