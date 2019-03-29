@@ -54,7 +54,7 @@ from blueprints.users.resources import bp_users
 
 app.register_blueprint(bp_feed, url_prefix='/feeds')
 app.register_blueprint(bp_auth, url_prefix='/login')
-app.register_blueprint(bp_users, url_prefix='/api/users')
+app.register_blueprint(bp_users, url_prefix='/users')
 app.register_blueprint(bp_feedLike, url_prefix='/feedlikes')
 
 db.create_all()

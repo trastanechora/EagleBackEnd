@@ -30,30 +30,27 @@ class FeedLikeResource(Resource):
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
    
     @jwt_required
-    def post(self):
+    def post(self, id_like):
         jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
-
-        parser = reqparse.RequestParser()
-        parser.add_argument('id_feed', location = 'json')
-        args = parser.parse_args()
 
         liked_by = jwtClaims['id']
 
-        qry = FeedLike.query.filter(FeedLike.id_feed == args['id_feed']).filter(FeedLike.liked_by == jwtClaims['id']).first()
+        qry = FeedLike.query.filter_by(id_feed = id_like).filter(FeedLike.liked_by == jwtClaims['id']).first()
 
         if qry is None:
+
+            id_feed = id_like
 
             created_at = datetime.datetime.now()
             updated_at = datetime.datetime.now()
 
-            feeds = FeedLike(None, args['id_feed'], liked_by, created_at, updated_at)
+            feeds = FeedLike(None, id_feed, liked_by, created_at, updated_at)
             db.session.add(feeds)
             db.session.commit()
             users = Users.query.get(jwtClaims['id'])
 
             feed = {}
             feed['data'] = marshal(feeds, FeedLike.response_field)
-            feed['user'] = marshal(users, Users.response_field)
             
             return feed, 200, {'Content_type' : 'application/json'}
         else:
