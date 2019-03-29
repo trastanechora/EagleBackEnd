@@ -4,7 +4,7 @@ from blueprints import db
 from flask_restful import fields
 import datetime
 
-# from blueprints.users import *
+from blueprints.users import *
 
 class Feeds(db.Model):
 
