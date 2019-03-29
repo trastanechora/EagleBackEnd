@@ -47,6 +47,11 @@ jwt = JWTManager(app)
 def add_claims_to_access_token(identity):
     return identity
 
+<<<<<<< HEAD
+from blueprints.feedLike.resources import bp_feedLike
+
+app.register_blueprint(bp_feedLike, url_prefix='/feedlike')
+=======
 from blueprints.PostFeed.resources import bp_feed
 
 from blueprints.auth import bp_auth
@@ -55,5 +60,6 @@ from blueprints.users.resources import bp_users
 app.register_blueprint(bp_feed, url_prefix='/feed')
 app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_users, url_prefix='/api/users')
+>>>>>>> dev
 
 db.create_all()
