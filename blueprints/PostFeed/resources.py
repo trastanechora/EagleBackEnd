@@ -53,7 +53,7 @@ class FeedResource(Resource):
     def post(self):
         jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
         parser = reqparse.RequestParser()
-        parser.add_argument('content', location = 'json')
+        parser.add_argument('content', location = 'json', required=True)
         parser.add_argument('tag', location = 'json')
         parser.add_argument('image', location = 'json')
         args = parser.parse_args()
