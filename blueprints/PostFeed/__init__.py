@@ -38,4 +38,4 @@ class Feeds(db.Model):
         self.updated_at = updated_at
 
     def __repr__(self):
-        return '<Feed %r>' % self.id
+        return '<Feed %r>' % self.id_feed
