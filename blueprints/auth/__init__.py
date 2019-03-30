@@ -31,4 +31,7 @@ class CreateTokenResources(Resource):
         #     return {'status': 'UNAUTHORIZED', 'message': 'invalid key or secret'}, 401
         # return {'token': token}, 200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
 
+    def options(self):
+        return {}, 200
+
 api.add_resource(CreateTokenResources, '')

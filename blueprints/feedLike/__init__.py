@@ -32,4 +32,4 @@ class FeedLike(db.Model):
         self.updated_at = updated_at
 
     def __repr__(self):
-        return '<FeedLike %r>' % self.id
+        return '<FeedLike %r>' % self.id_like

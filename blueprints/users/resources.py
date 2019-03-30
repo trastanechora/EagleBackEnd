@@ -99,6 +99,9 @@ class UsersRegister(Resource):
             return {'status': 'Success', 'message': 'User added', 'data': marshal(users, Users.response_field)}, 200, {'Content-Type': 'application/json'}
         return {'status': 'Failed', 'message': 'Please fill the field correctly'}, 400, {'Content-Type': 'application/json'}
 
+    def options(self):
+        return {}, 200
+
 
 class UsersProfile(Resource):
     @jwt_required
@@ -182,6 +185,9 @@ class UsersProfile(Resource):
             return {'status': "Success", 'message': 'User deleted'}, 200, {'Content-Type': 'application/json'}
 
         return {'status': 'Not Found', 'message': 'User not found'}, 404, {'Content-Type': 'application/json'}
+    
+    def options(self, id = None):
+        return {}, 200
 
 api.add_resource(UsersRegister, '/register')
 api.add_resource(UsersProfile, '/profile', '/profile/<int:id>')
