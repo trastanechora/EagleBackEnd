@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 
 from . import *
+from blueprints.users import *
 
 bp_feedLike = Blueprint('feedLike', __name__)
 api = Api(bp_feedLike)
@@ -14,42 +15,47 @@ class FeedLikeResource(Resource):
     def __init__(self):
         pass
 
-    # @jwt_required
-    def get(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('id_feed', type = int, location = 'args')
-        args = parser.parse_args()
-        # jwtClaims = get_jwt_claims()
+    def get(self, id_like):
 
-        # id_member = jwtClaims['id_member']
-
-        qry = FeedLike.query.filter_by(id_feed = args['id_feed']).all()
+        qry = FeedLike.query.filter_by(id_feed = id_like).all()
         feeds = marshal(qry, FeedLike.response_field)
 
+        output = {}
+        output['data'] = feeds
+        output['total'] = len(feeds)
+
         if qry is not None:
-            return feeds, 200, {'Content_type' : 'application/json'}
+            return output, 200, {'Content_type' : 'application/json'}
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
    
-    # @jwt_required
-    def post(self):
-        # jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
-        parser = reqparse.RequestParser()
-        parser.add_argument('id_feed', location = 'json')
-        parser.add_argument('liked_by', location = 'json')
-        args = parser.parse_args()
+    @jwt_required
+    def post(self, id_like):
+        jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
 
-        created_at = datetime.datetime.now()
-        updated_at = datetime.datetime.now()
+        liked_by = jwtClaims['id']
 
-        feeds = FeedLike(None, args['id_feed'], args['liked_by'], created_at, updated_at)
-        db.session.add(feeds)
-        db.session.commit()
+        qry = FeedLike.query.filter_by(id_feed = id_like).filter(FeedLike.liked_by == jwtClaims['id']).first()
 
-        feed = marshal(feeds, FeedLike.response_field)
-        
-        return feed, 200, {'Content_type' : 'application/json'}
-    
+        if qry is None:
+
+            id_feed = id_like
+
+            created_at = datetime.datetime.now()
+            updated_at = datetime.datetime.now()
+
+            feeds = FeedLike(None, id_feed, liked_by, created_at, updated_at)
+            db.session.add(feeds)
+            db.session.commit()
+            users = Users.query.get(jwtClaims['id'])
+
+            feed = {}
+            feed['data'] = marshal(feeds, FeedLike.response_field)
+            
+            return feed, 200, {'Content_type' : 'application/json'}
+        else:
+            return "id sudah dipakai", 200, {'Content_type' : 'application/json'}
+
     # @jwt_required
     def put(self, id_like):
         qry = FeedLike.query.get(id_like)
@@ -71,9 +77,11 @@ class FeedLikeResource(Resource):
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
-    # @jwt_required
+    @jwt_required
     def delete(self, id_like):
-        qry = FeedLike.query.get(id_like)
+        jwtClaims = get_jwt_claims()
+
+        qry = FeedLike.query.filter_by(id_feed = id_like).filter(FeedLike.liked_by == jwtClaims['id']).first()
 
         db.session.delete(qry)
         db.session.commit()
