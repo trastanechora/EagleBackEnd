@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
+from blueprints.users import *
 
 from . import *
 from blueprints.users import *

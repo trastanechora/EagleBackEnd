@@ -13,8 +13,8 @@ app = Flask(__name__)
 
 ### Konfigurasi database
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'SFsieaaBsLEpecP675r243faM8oSB2hV'
@@ -48,13 +48,18 @@ def add_claims_to_access_token(identity):
     return identity
 
 from blueprints.feedLike.resources import bp_feedLike
+
 from blueprints.PostFeed.resources import bp_feed
 from blueprints.auth import bp_auth
 from blueprints.users.resources import bp_users
+from blueprints.comments.resources import bp_comments
 
 app.register_blueprint(bp_feed, url_prefix='/feeds')
 app.register_blueprint(bp_auth, url_prefix='/login')
+app.register_blueprint(bp_users, url_prefix='/api/users')
+app.register_blueprint(bp_comments, url_prefix='/comments')
 app.register_blueprint(bp_users, url_prefix='/users')
 app.register_blueprint(bp_feedLike, url_prefix='/feedlikes')
+
 
 db.create_all()
