@@ -21,17 +21,23 @@ class FeedResource(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('p', type = int, location = 'args', default = 1)
             parser.add_argument('rp', type = int, location = 'args', default = 5)
-            parser.add_argument('id_user', type = int, location = 'args')
-            parser.add_argument('tag', type = str, location = 'args')
+            parser.add_argument('id_user', location = 'args')
+            parser.add_argument('tag', location = 'args')
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
             qry = Feeds.query
 
+            # biar bisa kasih filter di params
             if args['id_user'] is not None:
-                qry = qry.filter_by(args['id_user'])
+                qry = qry.filter(Feeds.id_user.like("%"+args['id_user']+"%"))
             if args['tag'] is not None:
-                qry = qry.filter_by(args['tag'])
+                qry = qry.filter(Feeds.tag.like("%"+args['tag']+"%"))
+
+            # if args['id_user'] is not None:
+            #     qry = qry.filter_by(args['id_user'])
+            # if args['tag'] is not None:
+            #     qry = qry.filter_by(args['tag'])
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
