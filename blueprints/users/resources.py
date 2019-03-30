@@ -122,7 +122,7 @@ class UsersProfile(Resource):
         parser.add_argument("profile_picture", location='json')
         parser.add_argument("gender", location='json')
         parser.add_argument("date_of_birth", location='json')
-        parser.add_argument("address", location='json')
+        parser.add_argument("address", location='json') 
         parser.add_argument("phone_number", location='json')
         parser.add_argument("facebook_link", location='json')
         parser.add_argument("instagram_link", location='json')
