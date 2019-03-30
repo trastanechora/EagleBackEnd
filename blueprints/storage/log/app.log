@@ -290,3 +290,4 @@
 [2019-03-29 20:34:07,074]{/home/alphatech/eagleBackEnd/tanah_air/TanahAir/blueprints/__init__.py:42} WARNING - REQUEST LOG	{"request": {"username": "Mae", "email": "trastanechora@lfjflsajf.com", "password": "Mae1234565768789"}, "response": {"status": "Error", "message": "Username already registered"}}POST
 [2019-03-29 20:34:21,201]{/home/alphatech/eagleBackEnd/tanah_air/TanahAir/blueprints/__init__.py:42} WARNING - REQUEST LOG	{"request": {"username": "Test", "email": "trastanechora@lfjflsajf.com", "password": "Mae1234565768789"}, "response": {"status": "Error", "message": "Email already registered"}}POST
 >>>>>>> dev
+[2019-03-30 13:56:10,686]{/home/alphatech/eagleBackEnd/tanah_air/TanahAir/blueprints/__init__.py:42} WARNING - REQUEST LOG	{"request": null, "response": "id sudah dipakai"}POST
