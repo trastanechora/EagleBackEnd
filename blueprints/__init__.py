@@ -8,13 +8,16 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
 
 ### Konfigurasi database
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'SFsieaaBsLEpecP675r243faM8oSB2hV'
