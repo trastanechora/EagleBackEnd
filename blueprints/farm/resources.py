@@ -21,21 +21,20 @@ class FarmResource(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('p', type = int, location = 'args', default = 1)
             parser.add_argument('rp', type = int, location = 'args', default = 5)
-            parser.add_argument('plant_type', location = 'args')
-            parser.add_argument('ready_at', type=datetime, location = 'args')
-            parser.add_argument('city', location = 'args')
+            parser.add_argument('search', location = 'args')
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
             qry = Farms.query
 
-            # biar bisa kasih filter di params
-            if args['plant_type'] is not None:
-                qry = qry.filter(Farms.plant_type.like("%"+args['plant_type']+"%"))
-            if args['ready_at'] is not None:
-                qry = qry.filter(Farms.ready_at.like("%"+args['ready_at']+"%"))
-            if args['city'] is not None:
-                qry = qry.filter(Farms.city.like("%"+args['city']+"%"))
+            if args['search'] is not None:
+                qry = qry.filter(Farms.plant_type.like("%"+args['search']+"%"))
+                if qry.first() is None:
+                    qry = Farms.query.filter(Farms.ready_at.like("%"+args['search']+"%"))
+                    if qry.first() is None:
+                        qry = Farms.query.filter(Farms.city.like("%"+args['search']+"%"))
+                        if qry.first() is None:
+                            return {'status': 'Not Found', 'message': 'Farm is not found'}, 404, {'Content-Type': 'application/json'}
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
@@ -93,6 +92,7 @@ class FarmResource(Resource):
         parser.add_argument('planted_at', type=datetime, location = 'json')
         parser.add_argument('ready_at', type=datetime, location='json')
         parser.add_argument('address', location = 'json')
+        parser.add_argument('city', location = 'json')
         parser.add_argument('photos', location = 'json')
         parser.add_argument('farm_size', location = 'json')
         parser.add_argument('coordinates', location = 'json')
@@ -108,6 +108,8 @@ class FarmResource(Resource):
             qry.ready_at = args['ready_at']
         if args['address'] is not None:
             qry.address = args['address']
+        if args['city'] is not None:
+            qry.city = args['city']
         if args['photos'] is not None:
             qry.photos = args['photos']
         if args['farm_size'] is not None:
