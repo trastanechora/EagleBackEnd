@@ -139,7 +139,7 @@ class UsersProfile(Resource):
         user_qry = Users.query.get(get_jwt_claims()['id'])
 
         if args['password'] is not None:
-            qry.password = args['password']
+            qry.password = sha256_crypt.encrypt(args['password'])
         if args['email'] is not None:
             qry.email = args['email']
         if args['display_name'] is not None:

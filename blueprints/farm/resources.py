@@ -4,6 +4,7 @@ from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 from blueprints.users import *
+from sqlalchemy import and_
 
 from . import *
 from blueprints.users import *
@@ -22,6 +23,13 @@ class FarmResource(Resource):
             parser.add_argument('p', type = int, location = 'args', default = 1)
             parser.add_argument('rp', type = int, location = 'args', default = 5)
             parser.add_argument('search', location = 'args')
+            parser.add_argument('id_user', location = 'args')
+            parser.add_argument('planted_at', location = 'args')
+            parser.add_argument('ready_at', location = 'args')
+            parser.add_argument('plant_type', location = 'args')
+            parser.add_argument('address', location = 'args')
+            parser.add_argument('city', location = 'args')
+            parser.add_argument('category', location = 'args')
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
@@ -30,11 +38,32 @@ class FarmResource(Resource):
             if args['search'] is not None:
                 qry = qry.filter(Farms.plant_type.like("%"+args['search']+"%"))
                 if qry.first() is None:
-                    qry = Farms.query.filter(Farms.ready_at.like("%"+args['search']+"%"))
+                    qry = Farms.query.filter(Farms.deskripsi.like("%"+args['search']+"%"))
                     if qry.first() is None:
                         qry = Farms.query.filter(Farms.city.like("%"+args['search']+"%"))
                         if qry.first() is None:
                             return {'status': 'Not Found', 'message': 'Farm is not found'}, 404, {'Content-Type': 'application/json'}
+
+            if args['id_user'] is not None:
+                qry = qry.filter(Farms.id_user.like("%"+args['id_user']+"%"))
+
+            if args['plant_type'] is not None:
+                qry = qry.filter(Farms.plant_type.like("%"+args['plant_type']+"%"))
+
+            if args['planted_at'] is not None:
+                qry = qry.filter(and_(Farms.planted_at >= args['planted_at'], Farms.planted_at < args['planted_at'] + str(datetime.timedelta(days=1))))
+            
+            if args['ready_at'] is not None:
+                qry = qry.filter(and_(Farms.ready_at >= args['ready_at'], Farms.ready_at < args['ready_at'] + str(datetime.timedelta(days=1))))
+
+            if args['address'] is not None:
+                qry = qry.filter(Farms.address.like("%"+args['address']+"%"))
+            
+            if args['city'] is not None:
+                qry = qry.filter(Farms.city.like("%"+args['city']+"%"))
+
+            if args['category'] is not None:
+                qry = qry.filter(Farms.category.like("%"+args['category']+"%"))
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
@@ -57,7 +86,7 @@ class FarmResource(Resource):
     def post(self):
         jwtClaims = get_jwt_claims() ##  buat kalo butuh data klaim
         parser = reqparse.RequestParser()
-        parser.add_argument('farm_size', location = 'json', required=True)
+        parser.add_argument('farm_size', type=int, location = 'json', required=True)
         parser.add_argument('coordinates', location = 'json', required=True)
         args = parser.parse_args()
 
@@ -69,11 +98,20 @@ class FarmResource(Resource):
         city = ""
         photos = ""
 
+        if args['farm_size'] > 0 and args['farm_size'] <= 100:
+            category = "kecil"
+        elif args['farm_size'] > 100 and args['farm_size'] <= 500:
+            category = "sedang"
+        elif args['farm_size'] > 500 and args['farm_size'] <= 1000:
+            category = "besar"
+        elif args['farm_size'] > 1000:
+            category = "sangat besar"
+
         id_user = jwtClaims['id']
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
-        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], args['coordinates'], created_at, updated_at)
+        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], created_at, updated_at)
         db.session.add(farms)
         db.session.commit()
 
@@ -89,12 +127,13 @@ class FarmResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('description', location = 'json')
         parser.add_argument('plant_type', location = 'json')
-        parser.add_argument('planted_at', type=datetime, location = 'json')
-        parser.add_argument('ready_at', type=datetime, location='json')
+        parser.add_argument('planted_at', location = 'json')
+        parser.add_argument('ready_at', location='json')
         parser.add_argument('address', location = 'json')
         parser.add_argument('city', location = 'json')
         parser.add_argument('photos', location = 'json')
         parser.add_argument('farm_size', location = 'json')
+        parser.add_argument('category', location = 'json')
         parser.add_argument('coordinates', location = 'json')
         args = parser.parse_args()
         
@@ -114,6 +153,8 @@ class FarmResource(Resource):
             qry.photos = args['photos']
         if args['farm_size'] is not None:
             qry.farm_size = args['farm_size']
+        if args['category'] is not None:
+            qry.category = args['category']
         if args['coordinates'] is not None:
             qry.attached_coordinates = args['coordinates']
             
