@@ -88,6 +88,7 @@ class FarmResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('farm_size', type=int, location = 'json', required=True)
         parser.add_argument('coordinates', location = 'json', required=True)
+        parser.add_argument('center', location = 'json', required=True)
         args = parser.parse_args()
 
         deskripsi = ""
@@ -111,7 +112,7 @@ class FarmResource(Resource):
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
-        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], created_at, updated_at)
+        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], created_at, updated_at)
         db.session.add(farms)
         db.session.commit()
 
@@ -135,6 +136,7 @@ class FarmResource(Resource):
         parser.add_argument('farm_size', location = 'json')
         parser.add_argument('category', location = 'json')
         parser.add_argument('coordinates', location = 'json')
+        parser.add_argument('center', location = 'json')
         args = parser.parse_args()
         
         if args['description'] is not None:
@@ -157,7 +159,9 @@ class FarmResource(Resource):
             qry.category = args['category']
         if args['coordinates'] is not None:
             qry.attached_coordinates = args['coordinates']
-            
+        if args['center'] is not None:
+            qry.attached_center = args['center']
+
         qry.updated_at = datetime.datetime.now()
 
         db.session.commit()
