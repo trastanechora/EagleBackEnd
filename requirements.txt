@@ -7,3 +7,5 @@ flask-script
 pymysql
 flask-jwt-extended
 requests
+passlib
+flask_cors
