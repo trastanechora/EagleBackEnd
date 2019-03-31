@@ -20,6 +20,7 @@ class Farms(db.Model):
     city = db.Column(db.String(225))
     photos = db.Column(db.String(255))
     farm_size = (db.Column(db.Integer))
+    category = db.Column(db.String(255))
     coordinates = db.Column(db.String(2000))
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
@@ -35,12 +36,13 @@ class Farms(db.Model):
         'city' : fields.String,
         'photos' : fields.String,
         'farm_size' : fields.Integer,
+        'category' : fields.String,
         'coordinates' : fields.String,
         'created_at' : fields.DateTime,
         'updated_at' : fields.DateTime
     }
 
-    def __init__ (self, id_farm, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, farm_size, coordinates, created_at, updated_at):
+    def __init__ (self, id_farm, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, farm_size, category, coordinates, created_at, updated_at):
         self.id_farm = id_farm
         self.id_user = id_user
         self.deskripsi = deskripsi
@@ -51,6 +53,7 @@ class Farms(db.Model):
         self.city = city
         self.photos = photos
         self.farm_size = farm_size
+        self.category = category
         self.coordinates = coordinates
         self.created_at = created_at
         self.updated_at = updated_at

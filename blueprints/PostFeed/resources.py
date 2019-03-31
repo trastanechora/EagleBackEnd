@@ -4,6 +4,7 @@ from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 from blueprints.users import *
+from blueprints.farm import *
 
 from . import *
 from blueprints.users import *
@@ -21,23 +22,57 @@ class FeedResource(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('p', type = int, location = 'args', default = 1)
             parser.add_argument('rp', type = int, location = 'args', default = 5)
+            parser.add_argument('search', location = 'args')
             parser.add_argument('id_user', location = 'args')
             parser.add_argument('tag', location = 'args')
+            parser.add_argument('plant_type', location = 'args')
+            parser.add_argument('location', location = 'args')
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
             qry = Feeds.query
 
-            # biar bisa kasih filter di params
+            if args['search'] is not None:
+                qry = qry.filter(Feeds.content.like("%"+args['search']+"%"))
+                if qry.first() is None:
+                    qry = Feeds.query.filter(Feeds.tag.like("%"+args['search']+"%"))
+                    if qry.first() is None:
+                        qry = Feeds.query
+                        qry1 = Farms.query.filter(Farms.plant_type.like("%"+args['search']+"%")).all()
+                        temp_list = []
+                        for element in qry1:
+                            temp = marshal(element, Farms.response_field)
+                            temp_list.append(temp['id_user'])
+                        qry = qry.filter(Feeds.id_user.in_(temp_list))
+                        if qry.first() is None:
+                            qry = Feeds.query
+                            qry1 = Users.query.filter(Users.address.like("%"+args['search']+"%")).all()
+                            temp_list = []
+                            for element in qry1:
+                                temp = marshal(element, Users.response_field)
+                                temp_list.append(temp['id'])
+                            qry = qry.filter(Feeds.id_user.in_(temp_list))
+                            if qry.first() is None:
+                                return {'status': 'Not Found', 'message': 'Feed is not found'}, 404, {'Content-Type': 'application/json'}
+
             if args['id_user'] is not None:
                 qry = qry.filter(Feeds.id_user.like("%"+args['id_user']+"%"))
             if args['tag'] is not None:
                 qry = qry.filter(Feeds.tag.like("%"+args['tag']+"%"))
-
-            # if args['id_user'] is not None:
-            #     qry = qry.filter_by(args['id_user'])
-            # if args['tag'] is not None:
-            #     qry = qry.filter_by(args['tag'])
+            if args['plant_type'] is not None:
+                qry1 = Farms.query.filter(Farms.plant_type.like("%"+args['plant_type']+"%")).all()
+                temp_list = []
+                for element in qry1:
+                    temp = marshal(element, Farms.response_field)
+                    temp_list.append(temp['id_user'])
+                qry = qry.filter(Feeds.id_user.in_(temp_list))
+            if args['location'] is not None:
+                qry1 = Users.query.filter(Users.address.like("%"+args['location']+"%")).all()
+                temp_list = []
+                for element in qry1:
+                    temp = marshal(element, Users.response_field)
+                    temp_list.append(temp['id'])
+                qry = qry.filter(Feeds.id_user.in_(temp_list))
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
@@ -66,7 +101,6 @@ class FeedResource(Resource):
         args = parser.parse_args()
 
         id_user = jwtClaims['id']
-        # id_user = 1
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
