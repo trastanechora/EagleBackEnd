@@ -81,15 +81,16 @@ class FeedResource(Resource):
                 feeds['user'] = marshal(users, Users.response_field)
                 rows.append(feeds)
             return rows, 200, {'Content_type' : 'application/json'}
+
         else:
             qry = Feeds.query.get(id_feed)
-            feeds = marshal(qry, Feeds.response_field)
-            users = Users.query.get(qry.id_user)
-            feeds['user'] = marshal(users, Users.response_field)
             if qry is not None:
+                feeds = marshal(qry, Feeds.response_field)
+                users = Users.query.get(qry.id_user)
+                feeds['user'] = marshal(users, Users.response_field)
                 return feeds, 200, {'Content_type' : 'application/json'}
             else:
-                return {'status' : 'NOT_FOUND'}, 404, {'Content_type' : 'application/json'}
+                return {'status' : 'NOT_FOUND', 'message' : 'Feeds Not Found'}, 404, {'Content_type' : 'application/json'}
    
     @jwt_required
     def post(self):
@@ -110,50 +111,60 @@ class FeedResource(Resource):
 
         feed = marshal(feeds, Feeds.response_field)
         users = Users.query.get(id_user)
+        users.post_count += 1
+        db.session.commit()
+
         feed['user'] = marshal(users, Users.response_field)
+
         
         return feed, 200, {'Content_type' : 'application/json'}
     
     @jwt_required
     def put(self, id_feed):
-        qry = Feeds.query.get(id_feed)
         parser = reqparse.RequestParser()
         parser.add_argument('content', location = 'json')
         parser.add_argument('tag', location = 'json')
         parser.add_argument('image', location = 'json')
         args = parser.parse_args()
         
-        if args['content'] is not None:
-            qry.content = args['content']
-        if args['tag'] is not None:
-            qry.tag = args['tag']
-        if args['image'] is not None:
-            qry.attached_image = args['image']
-            
-        qry.updated_at = datetime.datetime.now()
-
-        db.session.commit()
-
-        feeds = marshal(qry, Feeds.response_field)
-        users = Users.query.get(qry.id_user)
-        feeds['user'] = marshal(users, Users.response_field)
-
+        qry = Feeds.query.get(id_feed)
+        
         if qry is not None:
+            if args['content'] is not None:
+                qry.content = args['content']
+            if args['tag'] is not None:
+                qry.tag = args['tag']
+            if args['image'] is not None:
+                qry.attached_image = args['image']
+                
+            qry.updated_at = datetime.datetime.now()
+
+            db.session.commit()
+
+            feeds = marshal(qry, Feeds.response_field)
+            users = Users.query.get(qry.id_user)
+            feeds['user'] = marshal(users, Users.response_field)
             return feeds, 200, {'Content_type' : 'application/json'}
+
         else:
-            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
+            return {'status' : 'NOT_FOUND', 'message' : 'Feed not found'}, 404, {'Content_type' : 'application/json'}
 
     @jwt_required
     def delete(self, id_feed):
+        jwtClaims = get_jwt_claims()
+        id_user = jwtClaims['id']
+
         qry = Feeds.query.get(id_feed)
-
-        db.session.delete(qry)
-        db.session.commit()
-
+        
         if qry is not None:
+            qry_users = Users.query.get(id_user)
+            qry_users.post_count -= 1
+
+            db.session.delete(qry)
+            db.session.commit()
             return 'Deleted', 200, {'Content_type' : 'application/json'}
         else:
-            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
+            return {'status' : 'NOT_FOUND', 'message' : 'Feed not found'}, 404, {'Content_type' : 'application/json'}
 
     def options(self, id_feed = None):
         return {}, 200
