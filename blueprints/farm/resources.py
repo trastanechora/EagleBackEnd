@@ -99,13 +99,13 @@ class FarmResource(Resource):
         city = ""
         photos = ""
 
-        if args['farm_size'] > 0 and args['farm_size'] <= 100:
+        if args['farm_size'] > 0 and args['farm_size'] <= 250:
             category = "kecil"
-        elif args['farm_size'] > 100 and args['farm_size'] <= 500:
+        elif args['farm_size'] > 250 and args['farm_size'] <= 100:
             category = "sedang"
-        elif args['farm_size'] > 500 and args['farm_size'] <= 1000:
+        elif args['farm_size'] > 1000 and args['farm_size'] <= 2000:
             category = "besar"
-        elif args['farm_size'] > 1000:
+        elif args['farm_size'] > 2000:
             category = "sangat besar"
 
         id_user = jwtClaims['id']
