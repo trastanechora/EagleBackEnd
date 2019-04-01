@@ -21,6 +21,7 @@ class UsersRegister(Resource):
         parser.add_argument("display_name", location='json', default="")
         parser.add_argument("headline", location='json', default="")
         parser.add_argument("profile_picture", location='json', default="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png")
+        parser.add_argument("cover_photo", location='json', default="https://www.qmatchup.com/images/default-cover.jpg")
         parser.add_argument("gender", location='json', default="")
         parser.add_argument("date_of_birth", location='json', default="")
         parser.add_argument("address", location='json', default="")
@@ -91,7 +92,7 @@ class UsersRegister(Resource):
         updated_at = datetime.now()
         passwrd = sha256_crypt.encrypt(args['password'])
         
-        users = Users(None, args['username'], passwrd, args['email'], args['display_name'], args['headline'], args['profile_picture'], args['gender'], args['date_of_birth'], args['address'], args['phone_number'], args['facebook_link'], args['instagram_link'], args['twitter_link'], args['other_link'], created_at, updated_at, args['post_count'], args['job'], args['status'])
+        users = Users(None, args['username'], passwrd, args['email'], args['display_name'], args['headline'], args['profile_picture'], args['cover_photo'], args['gender'], args['date_of_birth'], args['address'], args['phone_number'], args['facebook_link'], args['instagram_link'], args['twitter_link'], args['other_link'], created_at, updated_at, args['post_count'], args['job'], args['status'])
         db.session.add(users)
         db.session.commit()
 
@@ -123,6 +124,7 @@ class UsersProfile(Resource):
         parser.add_argument("display_name", location='json')
         parser.add_argument("headline", location='json')
         parser.add_argument("profile_picture", location='json')
+        parser.add_argument("cover_photo", location='json')
         parser.add_argument("gender", location='json')
         parser.add_argument("date_of_birth", location='json')
         parser.add_argument("address", location='json') 
@@ -148,6 +150,8 @@ class UsersProfile(Resource):
             qry.headline = args['headline']
         if args['profile_picture'] is not None:
             qry.profile_picture = args['profile_picture']
+        if args['cover_photo'] is not None:
+            qry.cover_photo = args['cover_photo']
         if args['gender'] is not None:
             qry.gender = args['gender']
         if args['date_of_birth'] is not None:
