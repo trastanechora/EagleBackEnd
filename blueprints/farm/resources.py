@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 from blueprints.users import *
 from sqlalchemy import and_
+import dateutil.parser
 
 from . import *
 from blueprints.users import *
@@ -144,9 +145,11 @@ class FarmResource(Resource):
         if args['plant_type'] is not None:
             qry.plant_type = args['plant_type']
         if args['planted_at'] is not None:
-            qry.planted_at = args['planted_at']
+            datetime_object = dateutil.parser.parse(args['planted_at'])
+            qry.planted_at = datetime_object
         if args['ready_at'] is not None:
-            qry.ready_at = args['ready_at']
+            datetime_object = dateutil.parser.parse(args['planted_at'])
+            qry.ready_at = datetime_object
         if args['address'] is not None:
             qry.address = args['address']
         if args['city'] is not None:
