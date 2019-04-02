@@ -59,8 +59,6 @@ class UsersRegister(Resource):
         if not result:
             return {'status': 'Error', 'message': 'Username can only contain Alphanumeric'}, 400, {'Content-Type': 'application/json'}
 
-        
-
         # Password Validation
         pattern = ".{8,}"
         result = re.match(pattern, args['password'])
@@ -112,11 +110,8 @@ class UsersProfile(Resource):
             return {'status': 'Success', 'data': marshal(qry, Users.response_field)}, 200, {'Content-Type': 'application/json'}
         return {'status': 'Not Found', 'message': 'User not found'}, 400, {'Content-Type': 'application/json'}
 
-
     @jwt_required
-    def patch(self, id):
-        qry = Users.query.get(id)
-        
+    def patch(self, id):        
         parser = reqparse.RequestParser()
         parser.add_argument("username", location='json')
         parser.add_argument("password", location='json')
@@ -140,44 +135,47 @@ class UsersProfile(Resource):
 
         user_qry = Users.query.get(get_jwt_claims()['id'])
 
-        if args['password'] is not None:
-            qry.password = sha256_crypt.encrypt(args['password'])
-        if args['email'] is not None:
-            qry.email = args['email']
-        if args['display_name'] is not None:
-            qry.display_name = args['display_name']
-        if args['headline'] is not None:
-            qry.headline = args['headline']
-        if args['profile_picture'] is not None:
-            qry.profile_picture = args['profile_picture']
-        if args['cover_photo'] is not None:
-            qry.cover_photo = args['cover_photo']
-        if args['gender'] is not None:
-            qry.gender = args['gender']
-        if args['date_of_birth'] is not None:
-            qry.date_of_birth = args['date_of_birth']
-        if args['address'] is not None:
-            qry.address = args['address']
-        if args['phone_number'] is not None:
-            qry.phone_number = args['phone_number']
-        if args['facebook_link'] is not None:
-            qry.facebook_link = args['facebook_link']
-        if args['instagram_link'] is not None:
-            qry.instagram_link = args['instagram_link']
-        if args['twitter_link'] is not None:
-            qry.twitter_link = args['twitter_link']
-        if args['other_link'] is not None:
-            qry.other_link = args['other_link']
-        if args['post_count'] is not None:
-            qry.post_count = args['post_count']
-        if args['job'] is not None:
-            qry.job = args['job']
-        if args['status'] is not None:
-            qry.status = args['status']
-
-        db.session.commit()
+        qry = Users.query.get(id)
         if qry is not None:
+            if args['password'] is not None:
+                qry.password = sha256_crypt.encrypt(args['password'])
+            if args['email'] is not None:
+                qry.email = args['email']
+            if args['display_name'] is not None:
+                qry.display_name = args['display_name']
+            if args['headline'] is not None:
+                qry.headline = args['headline']
+            if args['profile_picture'] is not None:
+                qry.profile_picture = args['profile_picture']
+            if args['cover_photo'] is not None:
+                qry.cover_photo = args['cover_photo']
+            if args['gender'] is not None:
+                qry.gender = args['gender']
+            if args['date_of_birth'] is not None:
+                qry.date_of_birth = args['date_of_birth']
+            if args['address'] is not None:
+                qry.address = args['address']
+            if args['phone_number'] is not None:
+                qry.phone_number = args['phone_number']
+            if args['facebook_link'] is not None:
+                qry.facebook_link = args['facebook_link']
+            if args['instagram_link'] is not None:
+                qry.instagram_link = args['instagram_link']
+            if args['twitter_link'] is not None:
+                qry.twitter_link = args['twitter_link']
+            if args['other_link'] is not None:
+                qry.other_link = args['other_link']
+            if args['post_count'] is not None:
+                qry.post_count = args['post_count']
+            if args['job'] is not None:
+                qry.job = args['job']
+            if args['status'] is not None:
+                qry.status = args['status']
+
+            db.session.commit()
+        
             return {'status': 'Success', 'data': marshal(qry, Users.response_field)}, 200, {'Content-Type': 'application/json'}
+
         return {'status': 'Not Found', 'message': 'User not found'}, 400, {'Content-Type': 'application/json'}
 
     @jwt_required

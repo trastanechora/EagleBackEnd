@@ -5,9 +5,9 @@ from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
 from blueprints.users import *
 from blueprints.farm import *
+from blueprints.comments import *
 
 from . import *
-from blueprints.users import *
 
 bp_feed = Blueprint('feed', __name__)
 api = Api(bp_feed)
@@ -83,13 +83,13 @@ class FeedResource(Resource):
             return rows, 200, {'Content_type' : 'application/json'}
         else:
             qry = Feeds.query.get(id_feed)
-            feeds = marshal(qry, Feeds.response_field)
-            users = Users.query.get(qry.id_user)
-            feeds['user'] = marshal(users, Users.response_field)
             if qry is not None:
+                feeds = marshal(qry, Feeds.response_field)
+                users = Users.query.get(qry.id_user)
+                feeds['user'] = marshal(users, Users.response_field)
                 return feeds, 200, {'Content_type' : 'application/json'}
             else:
-                return {'status' : 'NOT_FOUND'}, 404, {'Content_type' : 'application/json'}
+                return {'status' : 'NOT_FOUND', 'message' : 'Post Feed not found'}, 404, {'Content_type' : 'application/json'}
    
     @jwt_required
     def post(self):
@@ -105,55 +105,60 @@ class FeedResource(Resource):
         updated_at = datetime.datetime.now()
 
         feeds = Feeds(None, id_user, args['content'], args['tag'], args['image'], created_at, updated_at)
+        qry_user = Users.query.get(id_user)
+        qry_user.post_count += 1
+
         db.session.add(feeds)
         db.session.commit()
 
         feed = marshal(feeds, Feeds.response_field)
-        users = Users.query.get(id_user)
-        feed['user'] = marshal(users, Users.response_field)
+        feed['user'] = marshal(qry_user, qry_user.response_field)
         
         return feed, 200, {'Content_type' : 'application/json'}
     
     @jwt_required
     def put(self, id_feed):
-        qry = Feeds.query.get(id_feed)
         parser = reqparse.RequestParser()
         parser.add_argument('content', location = 'json')
         parser.add_argument('tag', location = 'json')
         parser.add_argument('image', location = 'json')
         args = parser.parse_args()
         
-        if args['content'] is not None:
-            qry.content = args['content']
-        if args['tag'] is not None:
-            qry.tag = args['tag']
-        if args['image'] is not None:
-            qry.attached_image = args['image']
-            
-        qry.updated_at = datetime.datetime.now()
-
-        db.session.commit()
-
-        feeds = marshal(qry, Feeds.response_field)
-        users = Users.query.get(qry.id_user)
-        feeds['user'] = marshal(users, Users.response_field)
-
+        qry = Feeds.query.get(id_feed)
         if qry is not None:
+            if args['content'] is not None:
+                qry.content = args['content']
+            if args['tag'] is not None:
+                qry.tag = args['tag']
+            if args['image'] is not None:
+                qry.attached_image = args['image']
+                
+            qry.updated_at = datetime.datetime.now()
+
+            db.session.commit()
+
+            feeds = marshal(qry, Feeds.response_field)
+            users = Users.query.get(qry.id_user)
+            feeds['user'] = marshal(users, Users.response_field)
+
             return feeds, 200, {'Content_type' : 'application/json'}
         else:
-            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
+            return {'status' : 'NOT_FOUND', 'message' : 'Post Feed not found'}, 404, {'Content_type' : 'application/json'}
 
     @jwt_required
     def delete(self, id_feed):
         qry = Feeds.query.get(id_feed)
-
-        db.session.delete(qry)
-        db.session.commit()
-
         if qry is not None:
+            qry_user = Users.query.get(qry.id_user)
+            qry_user.post_count -= 1
+
+            qry_comment = Comments.query.filter(Comments.id_feed == id_feed).delete()
+
+            db.session.delete(qry)
+            db.session.commit()
             return 'Deleted', 200, {'Content_type' : 'application/json'}
         else:
-            return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
+            return {'status' : 'NOT_FOUND', 'message' : 'Post Feed not found'}, 404, {'Content_type' : 'application/json'}
 
     def options(self, id_feed = None):
         return {}, 200
