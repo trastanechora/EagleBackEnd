@@ -18,19 +18,16 @@ class CreateTokenResources(Resource):
         args = parser.parse_args()
 
         qry = Users.query.filter_by(username=args['username']).first()
+        if qry is not None:
 
-        if (sha256_crypt.verify(args['password'], qry.password) == True) :
-            token = create_access_token(marshal(qry, Users.response_field))
-        else:
-            return {'status' : 'UNAUTHORIZED', 'message' : 'Invalid key'}, 401, {'Content_type' : 'application/json'}
-        return {'status': 'Successful login', 'token' : token}, 200, {'Content_type' : 'application/json'}
-
-        # if qry is not None:
-        #     token = create_access_token(identity=marshal(qry, Users.response_field))
-        # else:
-        #     return {'status': 'UNAUTHORIZED', 'message': 'invalid key or secret'}, 401
-        # return {'token': token}, 200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
-
+            if (sha256_crypt.verify(args['password'], qry.password) == True) :
+                token = create_access_token(marshal(qry, Users.response_field))
+            else:
+                return {'status' : 'UNAUTHORIZED', 'message' : 'Invalid Password'}, 400, {'Content_type' : 'application/json'}
+            return {'status': 'Successful login', 'token' : token}, 200, {'Content_type' : 'application/json'}
+    
+        return {'status' : 'UNAUTHORIZED', 'message' : 'Invalid Username'}, 400, {'Content_type' : 'application/json'}
+        
     def options(self):
         return {}, 200
 

@@ -74,12 +74,13 @@ class FarmResource(Resource):
                 farms['user'] = marshal(users, Users.response_field)
                 rows.append(farms)
             return rows, 200, {'Content_type' : 'application/json'}
+
         else:
             qry = Farms.query.get(id_farm)
-            farms = marshal(qry, Farms.response_field)
-            users = Users.query.get(qry.id_user)
-            farms['user'] = marshal(users, Users.response_field)
             if qry is not None:
+                farms = marshal(qry, Farms.response_field)
+                users = Users.query.get(qry.id_user)
+                farms['user'] = marshal(users, Users.response_field)
                 return farms, 200, {'Content_type' : 'application/json'}
             else:
                 return {'status' : 'NOT_FOUND'}, 404, {'Content_type' : 'application/json'}
@@ -126,7 +127,6 @@ class FarmResource(Resource):
     
     @jwt_required
     def put(self, id_farm):
-        qry = Farms.query.get(id_farm)
         parser = reqparse.RequestParser()
         parser.add_argument('description', location = 'json')
         parser.add_argument('plant_type', location = 'json')
@@ -140,54 +140,56 @@ class FarmResource(Resource):
         parser.add_argument('coordinates', location = 'json')
         parser.add_argument('center', location = 'json')
         args = parser.parse_args()
-        
-        if args['description'] is not None:
-            qry.deskripsi = args['description']
-        if args['plant_type'] is not None:
-            qry.plant_type = args['plant_type']
-        if args['planted_at'] is not None:
-            datetime_object = dateutil.parser.parse(args['planted_at'])
-            qry.planted_at = datetime_object
-        if args['ready_at'] is not None:
-            datetime_object = dateutil.parser.parse(args['planted_at'])
-            qry.ready_at = datetime_object
-        if args['address'] is not None:
-            qry.address = args['address']
-        if args['city'] is not None:
-            qry.city = args['city']
-        if args['photos'] is not None:
-            qry.photos = args['photos']
-        if args['farm_size'] is not None:
-            qry.farm_size = args['farm_size']
-        if args['category'] is not None:
-            qry.category = args['category']
-        if args['coordinates'] is not None:
-            qry.attached_coordinates = args['coordinates']
-        if args['center'] is not None:
-            qry.attached_center = args['center']
 
-        qry.updated_at = datetime.datetime.now()
-
-        db.session.commit()
-
-        farms = marshal(qry, Farms.response_field)
-        users = Users.query.get(qry.id_user)
-        farms['user'] = marshal(users, Users.response_field)
-
+        qry = Farms.query.get(id_farm)
         if qry is not None:
+            if args['description'] is not None:
+                qry.deskripsi = args['description']
+            if args['plant_type'] is not None:
+                qry.plant_type = args['plant_type']
+            if args['planted_at'] is not None:
+                datetime_object = dateutil.parser.parse(args['planted_at'])
+                qry.planted_at = datetime_object
+            if args['ready_at'] is not None:
+                datetime_object = dateutil.parser.parse(args['planted_at'])
+                qry.ready_at = datetime_object
+            if args['address'] is not None:
+                qry.address = args['address']
+            if args['city'] is not None:
+                qry.city = args['city']
+            if args['photos'] is not None:
+                qry.photos = args['photos']
+            if args['farm_size'] is not None:
+                qry.farm_size = args['farm_size']
+            if args['category'] is not None:
+                qry.category = args['category']
+            if args['coordinates'] is not None:
+                qry.attached_coordinates = args['coordinates']
+            if args['center'] is not None:
+                qry.attached_center = args['center']
+
+            qry.updated_at = datetime.datetime.now()
+
+            db.session.commit()
+
+            farms = marshal(qry, Farms.response_field)
+            users = Users.query.get(qry.id_user)
+            farms['user'] = marshal(users, Users.response_field)
+
             return farms, 200, {'Content_type' : 'application/json'}
+
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
     @jwt_required
     def delete(self, id_farm):
         qry = Farms.query.get(id_farm)
-
-        db.session.delete(qry)
-        db.session.commit()
-
         if qry is not None:
+            db.session.delete(qry)
+            db.session.commit()
+
             return 'Deleted', 200, {'Content_type' : 'application/json'}
+            
         else:
             return {'status' : 'NOT_FOUND', 'message' : 'ID not found'}, 404, {'Content_type' : 'application/json'}
 
