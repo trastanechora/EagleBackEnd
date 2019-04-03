@@ -66,6 +66,16 @@ class CreateTokenEmailResources(Resource):
         # }, 200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
         return {'status': 'Successful login', 'token' : token}, 200, {'Content_type' : 'application/json'}
 
+        if qry is not None:
+
+            if (sha256_crypt.verify(args['password'], qry.password) == True) :
+                token = create_access_token(marshal(qry, Users.response_field))
+            else:
+                return {'status' : 'UNAUTHORIZED', 'message' : 'Invalid Password'}, 400, {'Content_type' : 'application/json'}
+            return {'status': 'Successful login', 'token' : token}, 200, {'Content_type' : 'application/json'}
+    
+        return {'status' : 'UNAUTHORIZED', 'message' : 'Invalid Username'}, 400, {'Content_type' : 'application/json'}
+        
     def options(self):
         return {}, 200
 
