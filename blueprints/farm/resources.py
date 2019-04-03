@@ -11,6 +11,8 @@ from . import *
 from blueprints.users import *
 from ast import literal_eval
 
+from ast import literal_eval
+
 bp_farm = Blueprint('farm', __name__)
 api = Api(bp_farm)
 
@@ -220,4 +222,5 @@ class test(Resource):
     def options(self, id_farm = None):
         return {}, 200
 
+api.add_resource(FarmResource, '', '/<int:id_farm>')
 api.add_resource(test, '/test')
