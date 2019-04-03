@@ -10,6 +10,8 @@ import dateutil.parser
 from . import *
 from blueprints.users import *
 
+from ast import literal_eval
+
 bp_farm = Blueprint('farm', __name__)
 api = Api(bp_farm)
 
@@ -193,4 +195,27 @@ class FarmResource(Resource):
     def options(self, id_farm = None):
         return {}, 200
 
+class test(Resource):
+    def get(self, id_farm = None):
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type = int, location = 'args', default = 1)
+        parser.add_argument('rp', type = int, location = 'args', default = 5)
+        args = parser.parse_args()
+        offsets = (args['p'] * args['rp']) - args['rp']
+        qry = Farms.query
+        
+        rows = []
+        for row in qry.limit(args['rp']).offset(offsets).all():
+            farms = marshal(row, Farms.response_field)
+            users = Users.query.get(row.id_user)
+            farms['user'] = marshal(users, Users.response_field)
+            rowrow = []
+            rowrow.append(literal_eval(farms['coordinates']))
+            rows.append(rowrow)
+        return rows, 200, {'Content_type' : 'application/json'}
+    
+    def options(self, id_farm = None):
+        return {}, 200
+
 api.add_resource(FarmResource, '', '/<int:id_farm>')
+api.add_resource(test, '/test')
