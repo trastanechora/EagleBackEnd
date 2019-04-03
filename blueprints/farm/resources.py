@@ -222,5 +222,4 @@ class test(Resource):
     def options(self, id_farm = None):
         return {}, 200
 
-api.add_resource(FarmResource, '', '/<int:id_farm>')
 api.add_resource(test, '/test')

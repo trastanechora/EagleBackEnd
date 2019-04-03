@@ -16,7 +16,7 @@ CORS(app)
 
 ### Konfigurasi database
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://ok:ok@0.0.0.0:3306/tanahair'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://:@0.0.0.0:3306/tanahair'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
