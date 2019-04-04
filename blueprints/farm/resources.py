@@ -55,10 +55,12 @@ class FarmResource(Resource):
                 qry = qry.filter(Farms.plant_type.like("%"+args['plant_type']+"%"))
 
             if args['planted_at'] is not None:
-                qry = qry.filter(and_(Farms.planted_at >= args['planted_at'], Farms.planted_at < args['planted_at'] + str(datetime.timedelta(days=1))))
+                datetime_object = dateutil.parser.parse(args['planted_at'])
+                qry = qry.filter(and_(Farms.planted_at >= datetime_object, Farms.planted_at < datetime_object + datetime.timedelta(days=1)))
             
             if args['ready_at'] is not None:
-                qry = qry.filter(and_(Farms.ready_at >= args['ready_at'], Farms.ready_at < args['ready_at'] + str(datetime.timedelta(days=1))))
+                datetime_object = dateutil.parser.parse(args['ready_at'])
+                qry = qry.filter(and_(Farms.ready_at >= datetime_object, Farms.ready_at < datetime_object + datetime.timedelta(days=1)))
 
             if args['address'] is not None:
                 qry = qry.filter(Farms.address.like("%"+args['address']+"%"))
