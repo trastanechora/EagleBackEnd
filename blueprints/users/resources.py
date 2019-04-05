@@ -101,10 +101,9 @@ class UsersRegister(Resource):
     def options(self):
         return {}, 200
 
-
 class UsersProfile(Resource):
     @jwt_required
-    def get(self):
+    def get(self, id = None):
         qry = Users.query.get(get_jwt_claims()['id'])
         if qry is not None:
             return {'status': 'Success', 'data': marshal(qry, Users.response_field)}, 200, {'Content-Type': 'application/json'}
@@ -191,5 +190,74 @@ class UsersProfile(Resource):
     def options(self, id = None):
         return {}, 200
 
+class AnotherUsersProfile(Resource):
+    def get(self, id = None):
+        if id == None:
+            parser = reqparse.RequestParser()
+            parser.add_argument('p', type = int, location = 'args', default = 1)
+            parser.add_argument('rp', type = int, location = 'args', default = 20)
+            parser.add_argument("username", location='json')
+            parser.add_argument("email", location='json')
+            parser.add_argument("display_name", location='json')
+            parser.add_argument("headline", location='json')
+            parser.add_argument("profile_picture", location='json')
+            parser.add_argument("cover_photo", location='json')
+            parser.add_argument("gender", location='json')
+            parser.add_argument("date_of_birth", location='json')
+            parser.add_argument("address", location='json') 
+            parser.add_argument("phone_number", location='json')
+            parser.add_argument("facebook_link", location='json')
+            parser.add_argument("instagram_link", location='json')
+            parser.add_argument("twitter_link", location='json')
+            parser.add_argument("other_link", location='json')
+            parser.add_argument("post_count", location='json')
+            parser.add_argument("job", location='json')
+            parser.add_argument("status", location='json')
+            args = parser.parse_args()
+
+            offsets = (args['p'] * args['rp']) - args['rp']
+            qry = Users.query
+
+            if args['username'] is not None:
+                qry = qry.filter(Users.username == args['username'])
+
+            if args['email'] is not None:
+                qry = qry.filter(Users.email.like("%"+args['email']+"%"))
+
+            if args['display_name'] is not None:
+                qry = qry.filter(Users.display_name.like("%"+args['display_name']+"%"))
+            
+            if args['headline'] is not None:
+                qry = qry.filter(Users.headline.like("%"+args['headline']+"%"))
+
+            if args['gender'] is not None:
+                qry = qry.filter(Users.gender.like("%"+args['gender']+"%"))
+
+            if args['address'] is not None:
+                qry = qry.filter(Users.address.like("%"+args['address']+"%"))
+
+            if args['job'] is not None:
+                qry = qry.filter(Users.job.like("%"+args['job']+"%"))
+
+            if args['status'] is not None:
+                qry = qry.filter(Users.status.like("%"+args['status']+"%"))
+
+            rows = []
+            for row in qry.limit(args['rp']).offset(offsets).all():
+                users = marshal(row, Users.response_field)
+                users = Users.query.get(row.id_user)
+                users['user'] = marshal(users, Users.response_field)
+                rows.append(users)
+            return rows, 200, {'Content_type' : 'application/json'}
+        
+        else:
+            qry = Users.query.get(id)
+            if qry is not None:
+                users = marshal(qry, Users.response_field)
+                return users, 200, {'Content_type' : 'application/json'}
+            else:
+                return {'status' : 'NOT_FOUND'}, 404, {'Content_type' : 'application/json'}
+
 api.add_resource(UsersRegister, '/register')
 api.add_resource(UsersProfile, '/profile', '/profile/<int:id>')
+api.add_resource(AnotherUsersProfile, '/profile', '/userprofile/<int:id>')

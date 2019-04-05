@@ -34,6 +34,8 @@ class FarmResource(Resource):
             parser.add_argument('address', location = 'args')
             parser.add_argument('city', location = 'args')
             parser.add_argument('category', location = 'args')
+            parser.add_argument('status_lahan', location = 'args')
+            parser.add_argument('status_tanaman', location = 'args')
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
@@ -49,7 +51,7 @@ class FarmResource(Resource):
                             return {'status': 'Not Found', 'message': 'Farm is not found'}, 404, {'Content-Type': 'application/json'}
 
             if args['id_user'] is not None:
-                qry = qry.filter(Farms.id_user.like("%"+args['id_user']+"%"))
+                qry = qry.filter(Farms.id_user == args['id_user'])
 
             if args['plant_type'] is not None:
                 qry = qry.filter(Farms.plant_type.like("%"+args['plant_type']+"%"))
@@ -70,6 +72,12 @@ class FarmResource(Resource):
 
             if args['category'] is not None:
                 qry = qry.filter(Farms.category.like("%"+args['category']+"%"))
+
+            if args['status_lahan'] is not None:
+                qry = qry.filter(Farms.status_lahan.like("%"+args['status_lahan']+"%"))
+
+            if args['status_tanaman'] is not None:
+                qry = qry.filter(Farms.status_tanaman.like("%"+args['status_tanaman']+"%"))
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
@@ -96,6 +104,7 @@ class FarmResource(Resource):
         parser.add_argument('farm_size', type=int, location = 'json', required=True)
         parser.add_argument('coordinates', location = 'json', required=True)
         parser.add_argument('center', location = 'json', required=True)
+        parser.add_argument('ketinggian', location = 'json', required=True)
         args = parser.parse_args()
 
         deskripsi = ""
@@ -105,6 +114,8 @@ class FarmResource(Resource):
         address = ""
         city = ""
         photos = ""
+        status_lahan = "tidak"
+        status_tanaman = "dijual"
 
         if args['farm_size'] > 0 and args['farm_size'] <= 100:
             category = "kecil"
@@ -119,7 +130,7 @@ class FarmResource(Resource):
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
-        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], created_at, updated_at)
+        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], status_lahan, status_tanaman, created_at, updated_at)
         db.session.add(farms)
         db.session.commit()
 
@@ -143,6 +154,9 @@ class FarmResource(Resource):
         parser.add_argument('category', location = 'json')
         parser.add_argument('coordinates', location = 'json')
         parser.add_argument('center', location = 'json')
+        parser.add_argument('ketinggian', location = 'json')
+        parser.add_argument('status_lahan', location = 'json')
+        parser.add_argument('status_tanaman', location = 'json')
         args = parser.parse_args()
 
         qry = Farms.query.get(id_farm)
@@ -171,6 +185,12 @@ class FarmResource(Resource):
                 qry.attached_coordinates = args['coordinates']
             if args['center'] is not None:
                 qry.attached_center = args['center']
+            if args['ketinggian'] is not None:
+                qry.attached_ketinggian = args['ketinggian']
+            if args['status_lahan'] is not None:
+                qry.attached_status_lahan = args['status_lahan']
+            if args['status_tanaman'] is not None:
+                qry.attached_status_tanaman = args['status_tanaman']
 
             qry.updated_at = datetime.datetime.now()
 
