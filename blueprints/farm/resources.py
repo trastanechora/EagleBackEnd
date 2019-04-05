@@ -9,6 +9,7 @@ import dateutil.parser
 
 from . import *
 from blueprints.users import *
+from blueprints.analyze import *
 from ast import literal_eval
 
 from ast import literal_eval
@@ -163,8 +164,30 @@ class FarmResource(Resource):
         if qry is not None:
             if args['description'] is not None:
                 qry.deskripsi = args['description']
+
             if args['plant_type'] is not None:
                 qry.plant_type = args['plant_type']
+                
+                temp_list = []
+                analyze_qry = Analyze.query.all()
+                for element in analyze_qry:
+                    temp = element.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
+                    if temp is not None:
+                        temp_list.append(1)
+                
+                if not temp_list:
+                    analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0)
+                    db.session.add(analyze)
+                    db.session.commit()
+                else:
+                    before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
+                    before_analyze_qry.luas_tanah -= qry.farm_size
+                    db.session.commit()
+
+                    analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
+                    analyze_qry.luas_tanah += qry.farm_size
+                    db.session.commit()
+                
             if args['planted_at'] is not None:
                 datetime_object = dateutil.parser.parse(args['planted_at'])
                 qry.planted_at = datetime_object
@@ -199,6 +222,7 @@ class FarmResource(Resource):
             farms = marshal(qry, Farms.response_field)
             users = Users.query.get(qry.id_user)
             farms['user'] = marshal(users, Users.response_field)
+            farms['test'] = marshal(analyze_qry, Analyze.response_field)
 
             return farms, 200, {'Content_type' : 'application/json'}
 
