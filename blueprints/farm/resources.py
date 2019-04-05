@@ -166,7 +166,6 @@ class FarmResource(Resource):
                 qry.deskripsi = args['description']
 
             if args['plant_type'] is not None:
-                qry.plant_type = args['plant_type']
                 
                 temp_list = []
                 analyze_qry = Analyze.query.all()
@@ -179,14 +178,23 @@ class FarmResource(Resource):
                     analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0)
                     db.session.add(analyze)
                     db.session.commit()
+
+                    if qry.plant_type != "":
+                        before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
+                        before_analyze_qry.luas_tanah -= qry.farm_size
+                        db.session.commit()
+
                 else:
-                    before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
-                    before_analyze_qry.luas_tanah -= qry.farm_size
-                    db.session.commit()
+                    if qry.plant_type != "":
+                        before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
+                        before_analyze_qry.luas_tanah -= qry.farm_size
 
                     analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
                     analyze_qry.luas_tanah += qry.farm_size
                     db.session.commit()
+
+                qry.plant_type = args['plant_type']
+            
                 
             if args['planted_at'] is not None:
                 datetime_object = dateutil.parser.parse(args['planted_at'])
@@ -222,7 +230,6 @@ class FarmResource(Resource):
             farms = marshal(qry, Farms.response_field)
             users = Users.query.get(qry.id_user)
             farms['user'] = marshal(users, Users.response_field)
-            farms['test'] = marshal(analyze_qry, Analyze.response_field)
 
             return farms, 200, {'Content_type' : 'application/json'}
 
@@ -233,6 +240,9 @@ class FarmResource(Resource):
     def delete(self, id_farm):
         qry = Farms.query.get(id_farm)
         if qry is not None:
+            before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
+            before_analyze_qry.luas_tanah -= qry.farm_size
+
             db.session.delete(qry)
             db.session.commit()
 
