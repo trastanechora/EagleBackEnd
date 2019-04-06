@@ -16,8 +16,8 @@ CORS(app)
 
 ### Konfigurasi database
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bismillah@127.0.0.1:3306/final_project_edit_2'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bismillah@127.0.0.1:3306/final_project_edit_2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@0.0.0.0:3306/tanahair'
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alphatech123@localhost:3306/final_project'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -59,6 +59,7 @@ from blueprints.comments.resources import bp_comments
 from blueprints.commentLike.resources import bp_commentsLike
 from blueprints.farm.resources import bp_farm
 from blueprints.analyze import bp_analyze
+from blueprints.bookmark.resources import bp_bookmark
 
 app.register_blueprint(bp_auth, url_prefix='/login')
 app.register_blueprint(bp_users, url_prefix='/users')
@@ -68,5 +69,6 @@ app.register_blueprint(bp_comments, url_prefix='/comments')
 app.register_blueprint(bp_commentsLike, url_prefix='/commentlikes')
 app.register_blueprint(bp_farm, url_prefix='/farms')
 app.register_blueprint(bp_analyze, url_prefix='/analyze')
+app.register_blueprint(bp_bookmark, url_prefix='/bookmarks')
 
 db.create_all()
