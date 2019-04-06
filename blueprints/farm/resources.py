@@ -105,7 +105,7 @@ class FarmResource(Resource):
         parser.add_argument('farm_size', type=int, location = 'json', required=True)
         parser.add_argument('coordinates', location = 'json', required=True)
         parser.add_argument('center', location = 'json', required=True)
-        parser.add_argument('ketinggian', location = 'json', required=True)
+        parser.add_argument('ketinggian', type=int, location = 'json', required=True)
         args = parser.parse_args()
 
         deskripsi = ""
@@ -127,11 +127,20 @@ class FarmResource(Resource):
         elif args['farm_size'] > 1000:
             category = "sangat besar"
 
+        if args['ketinggian'] > 0 and args['ketinggian'] <= 700:
+            zona = "zona iklim panas"
+        elif args['ketinggian'] > 700 and args['ketinggian'] <= 1500:
+            zona = "zona iklim sedang"
+        elif args['ketinggian'] > 1500 and args['ketinggian'] <= 2500:
+            zona = "zona iklim sejuk"
+        elif args['ketinggian'] > 2500:
+            zona = "zona iklim dingin"
+
         id_user = jwtClaims['id']
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
-        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], status_lahan, status_tanaman, created_at, updated_at)
+        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], zona, status_lahan, status_tanaman, created_at, updated_at)
         db.session.add(farms)
         db.session.commit()
 
@@ -156,6 +165,7 @@ class FarmResource(Resource):
         parser.add_argument('coordinates', location = 'json')
         parser.add_argument('center', location = 'json')
         parser.add_argument('ketinggian', location = 'json')
+        parser.add_argument('zona', location = 'json')
         parser.add_argument('status_lahan', location = 'json')
         parser.add_argument('status_tanaman', location = 'json')
         args = parser.parse_args()
@@ -218,6 +228,8 @@ class FarmResource(Resource):
                 qry.attached_center = args['center']
             if args['ketinggian'] is not None:
                 qry.attached_ketinggian = args['ketinggian']
+            if args['zona'] is not None:
+                qry.attached_zona = args['zona']
             if args['status_lahan'] is not None:
                 qry.attached_status_lahan = args['status_lahan']
             if args['status_tanaman'] is not None:
