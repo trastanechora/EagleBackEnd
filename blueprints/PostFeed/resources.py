@@ -86,7 +86,25 @@ class FeedResource(Resource):
             for row in qry.limit(args['rp']).offset(offsets).all():
                 feeds = marshal(row, Feeds.response_field)
                 users = Users.query.get(row.id_user)
+                feedLike = FeedLike.query.filter(FeedLike.id_feed == row.id_feed)
+                rowFeedLike = []
+                for row in feedLike:
+                    feedlike = marshal(row, FeedLike.response_field)
+                    rowFeedLike.append(feedlike)
+                feedComment = Comments.query.filter(Comments.id_feed==row.id_feed)
+                rowComment = []
+                for row in feedComment:
+                    commentLike = CommentsLike.query.filter(CommentsLike.id_comment==row.id)
+                    comment = marshal(row, Comments.response_field)
+                    CommentLikes = []
+                    for rowed in commentLike:
+                        commentLikes = marshal(rowed, CommentsLike.response_field)
+                        CommentLikes.append(commentLikes)
+                    comment['like'] = CommentLikes
+                    rowComment.append(comment)
                 feeds['user'] = marshal(users, Users.response_field)
+                feeds['like'] = rowFeedLike
+                feeds['comment'] = rowComment
                 rows.append(feeds)
             return rows, 200, {'Content_type' : 'application/json'}
         else:
