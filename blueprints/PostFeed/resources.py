@@ -6,7 +6,7 @@ import datetime
 from blueprints.users import *
 from blueprints.farm import *
 from blueprints.comments import *
-
+from sqlalchemy import desc
 from . import *
 
 bp_feed = Blueprint('feed', __name__)
@@ -27,6 +27,7 @@ class FeedResource(Resource):
             parser.add_argument('tag', location = 'args')
             parser.add_argument('plant_type', location = 'args')
             parser.add_argument('location', location = 'args')
+            parser.add_argument('sort', location='args', choices=('desc','asc'))
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
@@ -73,6 +74,11 @@ class FeedResource(Resource):
                     temp = marshal(element, Users.response_field)
                     temp_list.append(temp['id'])
                 qry = qry.filter(Feeds.id_user.in_(temp_list))
+
+            if args['sort']=='desc':
+                qry = qry.order_by(desc(Feeds.created_at))
+            else:
+                qry = qry.order_by(Feeds.created_at)
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
