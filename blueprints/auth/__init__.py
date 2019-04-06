@@ -52,7 +52,7 @@ class CreateTokenEmailResources(Resource):
         else:
             created_at = datetime.now()
             updated_at = datetime.now()
-            user = Users(None, args['email'], password, args['email'], args['display_name'], None, args['profile_picture'], None, None, None, None, None, None, None, None, None, created_at, updated_at, None, None, None)
+            user = Users(None, args['email'], password, args['email'], args['display_name'], None, args['profile_picture'], None, None, None, None, None, None, None, None, None, created_at, updated_at, 0, None, None)
             # users = Users(None, args['username'], passwrd, args['email'], args['display_name'], args['headline'], args['profile_picture'], args['cover_photo'], args['gender'], args['date_of_birth'], args['address'], args['phone_number'], args['facebook_link'], args['instagram_link'], args['twitter_link'], args['other_link'], created_at, updated_at, args['post_count'], args['job'], args['status'])
 
             db.session.add(user)
