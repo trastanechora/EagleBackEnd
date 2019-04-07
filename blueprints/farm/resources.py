@@ -117,6 +117,7 @@ class FarmResource(Resource):
         photos = ""
         status_lahan = "tidak"
         status_tanaman = "dijual"
+        perkiraan_panen = 0
 
         if args['farm_size'] > 0 and args['farm_size'] <= 100:
             category = "kecil"
@@ -140,7 +141,7 @@ class FarmResource(Resource):
         created_at = datetime.datetime.now()
         updated_at = datetime.datetime.now()
 
-        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], zona, status_lahan, status_tanaman, created_at, updated_at)
+        farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], perkiraan_panen, zona, status_lahan, status_tanaman, created_at, updated_at)
         db.session.add(farms)
         db.session.commit()
 
@@ -165,6 +166,7 @@ class FarmResource(Resource):
         parser.add_argument('coordinates', location = 'json')
         parser.add_argument('center', location = 'json')
         parser.add_argument('ketinggian', location = 'json')
+        parser.add_argument('perkiraan_panen', location = 'json')
         parser.add_argument('zona', location = 'json')
         parser.add_argument('status_lahan', location = 'json')
         parser.add_argument('status_tanaman', location = 'json')
@@ -210,8 +212,8 @@ class FarmResource(Resource):
                 datetime_object = dateutil.parser.parse(args['planted_at'])
                 qry.planted_at = datetime_object
             if args['ready_at'] is not None:
-                datetime_object = dateutil.parser.parse(args['planted_at'])
-                qry.ready_at = datetime_object
+                datetimes_object = dateutil.parser.parse(args['ready_at'])
+                qry.ready_at = datetimes_object
             if args['address'] is not None:
                 qry.address = args['address']
             if args['city'] is not None:
@@ -228,6 +230,8 @@ class FarmResource(Resource):
                 qry.attached_center = args['center']
             if args['ketinggian'] is not None:
                 qry.attached_ketinggian = args['ketinggian']
+            if args['perkiraan_panen'] is not None:
+                qry.perkiraan_panen = args['perkiraan_panen']
             if args['zona'] is not None:
                 qry.attached_zona = args['zona']
             if args['status_lahan'] is not None:
