@@ -24,6 +24,7 @@ class Farms(db.Model):
     coordinates = db.Column(db.String(2000))
     center = db.Column(db.String(255))
     ketinggian = db.Column(db.Integer)
+    perkiraan_panen = db.Column(db.Integer)
     zona = db.Column(db.String(255))
     status_lahan = db.Column(db.String(255))
     status_tanaman = db.Column(db.String(255))
@@ -45,6 +46,7 @@ class Farms(db.Model):
         'coordinates' : fields.String,
         'center' : fields.String,
         'ketinggian' : fields.Integer,
+        'perkiraan_panen' : fields.Integer,
         'zona': fields.String,
         'status_lahan': fields.String,
         'status_tanaman': fields. String,
@@ -52,7 +54,7 @@ class Farms(db.Model):
         'updated_at' : fields.DateTime
     }
 
-    def __init__ (self, id_farm, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, farm_size, category, coordinates, center, ketinggian, zona, status_lahan, status_tanaman, created_at, updated_at):
+    def __init__ (self, id_farm, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, farm_size, category, coordinates, center, ketinggian, perkiraan_panen, zona, status_lahan, status_tanaman, created_at, updated_at):
         self.id_farm = id_farm
         self.id_user = id_user
         self.deskripsi = deskripsi
@@ -67,6 +69,7 @@ class Farms(db.Model):
         self.coordinates = coordinates
         self.center = center
         self.ketinggian = ketinggian
+        self.perkiraan_panen = perkiraan_panen
         self.zona = zona
         self.status_lahan = status_lahan
         self.status_tanaman = status_tanaman
