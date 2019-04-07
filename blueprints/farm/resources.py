@@ -2,7 +2,7 @@ import json, logging
 from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required, get_jwt_claims
-import datetime
+from datetime import datetime
 from blueprints.users import *
 from sqlalchemy import and_
 import dateutil.parser
@@ -110,8 +110,8 @@ class FarmResource(Resource):
 
         deskripsi = ""
         plant_type = ""
-        planted_at = datetime.datetime.now()
-        ready_at = datetime.datetime.now()
+        planted_at = datetime.now()
+        ready_at = datetime.now()
         address = ""
         city = ""
         photos = ""
@@ -138,8 +138,8 @@ class FarmResource(Resource):
             zona = "zona iklim dingin"
 
         id_user = jwtClaims['id']
-        created_at = datetime.datetime.now()
-        updated_at = datetime.datetime.now()
+        created_at = datetime.now()
+        updated_at = datetime.now()
 
         farms = Farms(None, id_user, deskripsi, plant_type, planted_at, ready_at, address, city, photos, args['farm_size'], category, args['coordinates'], args['center'], args['ketinggian'], perkiraan_panen, zona, status_lahan, status_tanaman, created_at, updated_at)
         db.session.add(farms)
@@ -178,32 +178,54 @@ class FarmResource(Resource):
                 qry.deskripsi = args['description']
 
             if args['plant_type'] is not None:
-                
-                temp_list = []
-                analyze_qry = Analyze.query.all()
-                for element in analyze_qry:
-                    temp = element.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
-                    if temp is not None:
-                        temp_list.append(1)
-                
-                if not temp_list:
-                    analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0)
-                    db.session.add(analyze)
-                    db.session.commit()
+                if qry.plant_type != "":
+                    created_at = datetime.now()
+                    updated_at = datetime.now()
 
-                    if qry.plant_type != "":
-                        before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
-                        before_analyze_qry.luas_tanah -= qry.farm_size
+                    before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).order_by(Analyze.id.desc()).first()
+                    if before_analyze_qry is not None:
+                        subs_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).order_by(Analyze.id.desc()).first()
+                        subs_analyze_qry.luas_tanah -= qry.farm_size
+
+                        new_size = before_analyze_qry.luas_tanah + qry.farm_size
+                        analyze = Analyze(None, args['plant_type'], new_size, 0, 0, created_at, updated_at)
+                        
+                        db.session.add(analyze)
                         db.session.commit()
 
-                else:
-                    if qry.plant_type != "":
-                        before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
-                        before_analyze_qry.luas_tanah -= qry.farm_size
 
-                    analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
-                    analyze_qry.luas_tanah += qry.farm_size
-                    db.session.commit()
+                    else:
+                        subs_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).order_by(Analyze.id.desc()).first()
+                        subs_analyze_qry.luas_tanah -= qry.farm_size
+                        analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0, created_at, updated_at)
+                        db.session.add(analyze)
+                        db.session.commit()
+
+                elif qry.plant_type == "":
+                    created_at = datetime.now()
+                    updated_at = datetime.now()
+
+                    before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).order_by(Analyze.id.desc()).first()
+                    if before_analyze_qry is not None:
+                        new_size = before_analyze_qry.luas_tanah + qry.farm_size
+                        analyze = Analyze(None, args['plant_type'], new_size, 0, 0, created_at, updated_at)
+                        db.session.add(analyze)
+                        db.session.commit()
+
+                    else:
+                        analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0, created_at, updated_at)
+                        db.session.add(analyze)
+                        db.session.commit()
+
+                
+                # else:
+                    # if qry.plant_type != "":
+                    #     before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
+                    #     before_analyze_qry.luas_tanah -= qry.farm_size
+
+                    # analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
+                    # analyze_qry.luas_tanah += qry.farm_size
+                    # db.session.commit()
 
                 qry.plant_type = args['plant_type']
             
@@ -239,7 +261,7 @@ class FarmResource(Resource):
             if args['status_tanaman'] is not None:
                 qry.attached_status_tanaman = args['status_tanaman']
 
-            qry.updated_at = datetime.datetime.now()
+            qry.updated_at = datetime.now()
 
             db.session.commit()
 

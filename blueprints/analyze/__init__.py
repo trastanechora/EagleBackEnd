@@ -5,6 +5,7 @@ from . import *
 from blueprints import db
 from blueprints.users import *
 from blueprints.farm import *
+from datetime import datetime
 
 bp_analyze = Blueprint('analyze', __name__)
 api = Api(bp_analyze)
@@ -21,7 +22,8 @@ class Analyze(db.Model):
     luas_tanah = db.Column(db.Integer)
     avg_panen = db.Column(db.Integer)
     jumlah_tanaman = db.Column(db.Integer)
-
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
     # cover_photo = db.Column(db.String(255))
     # gender = db.Column(db.String(20))
@@ -48,6 +50,8 @@ class Analyze(db.Model):
         "luas_tanah" : fields.String,
         "avg_panen" : fields.String,
         "jumlah_tanaman" : fields.String,
+        'created_at' : fields.DateTime,
+        'updated_at' : fields.DateTime
         # "cover_photo" : fields.String,
         # "gender" : fields.String,
         # "date_of_birth" : fields.String,
@@ -64,7 +68,7 @@ class Analyze(db.Model):
         # "status" : fields.String
     }
 
-    def __init__(self, id, jenis_tanaman, luas_tanah, avg_panen, jumlah_tanaman):
+    def __init__(self, id, jenis_tanaman, luas_tanah, avg_panen, jumlah_tanaman, created_at, updated_at):
         self.id = id
         self.jenis_tanaman = jenis_tanaman
         # self.id_lahan = id_lahan
@@ -74,6 +78,7 @@ class Analyze(db.Model):
         self.luas_tanah = luas_tanah
         self.avg_panen = avg_panen
         self.jumlah_tanaman = jumlah_tanaman
+        self.created_at = created_at
         # self.cover_photo = cover_photo
         # self.gender = gender
         # self.date_of_birth = date_of_birth
@@ -101,15 +106,7 @@ class AnalyzeResource(Resource):
         analyze_qry = Analyze.query
 
         if args['jenis_tanaman'] is not None:
-            farm_qry = Farms.query.filter(Farms.plant_type == args['jenis_tanaman']).all()
-            
-            luas_tanah = 0
-            for element in farm_qry:
-                luas_tanah += element.farm_size
-            
-            analyze_qry = Analyze.query.filter(Analyze.id == 1).first()
-            analyze_qry.luas_tanah = luas_tanah
-            db.session.commit()
+            analyze_qry = analyze_qry.filter(Analyze.jenis_tanaman == args['jenis_tanaman']).first()
 
         return marshal(analyze_qry, Analyze.response_field), 200, {'Content_type' : 'application/json'}
 
