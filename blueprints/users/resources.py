@@ -155,6 +155,10 @@ class UsersProfile(Resource):
             if args['address'] is not None:
                 qry.address = args['address']
             if args['phone_number'] is not None:
+                if args['phone_number'][0] == '0':
+                    args['phone_number'] = '+62' + args['phone_number'][1:]
+                elif args['phone_number'][0] != '+':
+                    args['phone_number'] = '+62' + args['phone_number']
                 qry.phone_number = args['phone_number']
             if args['facebook_link'] is not None:
                 qry.facebook_link = args['facebook_link']
