@@ -3,10 +3,15 @@ from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required, get_jwt_claims
 import datetime
+from sqlalchemy import desc
 
 from . import *
 from blueprints.users import *
 from blueprints.PostFeed import *
+
+from blueprints.comments import *
+from blueprints.feedLike import *
+from blueprints.commentLike import *
 
 bp_bookmark = Blueprint('Bookmark', __name__)
 api = Api(bp_bookmark)
@@ -23,59 +28,111 @@ class BookmarkResources(Resource):
         if id_bookmark == None:
             parser = reqparse.RequestParser()
             parser.add_argument('p', type = int, location = 'args', default = 1)
-            parser.add_argument('rp', type = int, location = 'args', default = 5)
+            parser.add_argument('rp', type = int, location = 'args', default = 100)
             parser.add_argument('search', location = 'args')
             parser.add_argument('sort', location='args', choices=('desc','asc'))
             args = parser.parse_args()
 
             offsets = (args['p'] * args['rp']) - args['rp']
-            qry = Feeds.query
+            
+            # qry = Bookmark.query
 
-            # if args['search'] is not None:
-            #     qry = qry.filter(Feeds.content.like("%"+args['search']+"%"))
-            #     if qry.first() is None:
-            #         qry = Feeds.query.filter(Feeds.tag.like("%"+args['search']+"%"))
-            #         if qry.first() is None:
-            #             qry = Feeds.query
-            #             qry1 = Farms.query.filter(Farms.plant_type.like("%"+args['search']+"%")).all()
-            #             temp_list = []
-            #             for element in qry1:
-            #                 temp = marshal(element, Farms.response_field)
-            #                 temp_list.append(temp['id_user'])
-            #             qry = qry.filter(Feeds.id_user.in_(temp_list))
-            #             if qry.first() is None:
-            #                 qry = Feeds.query
-            #                 qry1 = Users.query.filter(Users.address.like("%"+args['search']+"%")).all()
-            #                 temp_list = []
-            #                 for element in qry1:
-            #                     temp = marshal(element, Users.response_field)
-            #                     temp_list.append(temp['id'])
-            #                 qry = qry.filter(Feeds.id_user.in_(temp_list))
-            #                 if qry.first() is None:
-            #                     return {'status': 'Not Found', 'message': 'Feed is not found'}, 404, {'Content-Type': 'application/json'}
-
-            qry = qry.filter(Feeds.id_user==jwtClaims['id'])
-
-            if args['sort']=='desc':
-                qry = qry.order_by(desc(Feeds.created_at))
-            else:
-                qry = qry.order_by(Feeds.created_at)
+            # rows = []
+            # for row in qry.limit(args['rp']).offset(offsets).all():
+            #     bookmarks = marshal(row, Bookmark.response_field)
+            #     feeds = Feeds.query.get(row.id_feed)
+            #     bookmarks['feed'] = marshal(feeds, Feeds.response_field)
+            #     feedLike = FeedLike.query.filter(FeedLike.id_feed == row.id_feed)
+            #     # rowFeedLike = []
+            #     # for row in feedLike:
+            #     #     feedlike = marshal(row, FeedLike.response_field)
+            #     #     rowFeedLike.append(feedlike)
+            #     bookmarks['feed_like'] = marshal(feedLike, FeedLike.response_field)
+            #     users = Users.query.get(row.id_user)
+            #     bookmarks['user'] = marshal(users, Users.response_field)
+            #     rows.append(bookmarks)
+            # return rows, 200, {'Content_type' : 'application/json'}
+            qry = Bookmark.query
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
                 bookmarks = marshal(row, Bookmark.response_field)
-                feeds = Feeds.query.get(row.id_feed)
-                bookmarks['feed'] = marshal(feeds, Feeds.response_field)
-                users = Users.query.get(row.id_user)
-                bookmarks['user'] = marshal(users, Users.response_field)
+                # feeds = Feeds.query.get(row.id_feed)
+                # bookmarks['feed'] = marshal(feeds, Feeds.response_field)
+                # bookmarks['feed_like'] = marshal(feedLike, FeedLike.response_field)
+                # users = Users.query.get(row.id_user)
+                # bookmarks['user'] = marshal(users, Users.response_field)
+
+                qry = Feeds.query.get(row.id_feed)
+            
+                feeds = marshal(qry, Feeds.response_field)
+                users = Users.query.get(qry.id_user)
+                feedLike = FeedLike.query.filter(FeedLike.id_feed == qry.id_feed)
+                rowFeedLike = []
+                for row in feedLike:
+                    feedlike = marshal(row, FeedLike.response_field)
+                    rowFeedLike.append(feedlike)
+                feedComment = Comments.query.filter(Comments.id_feed==qry.id_feed)
+                rowComment = []
+                for row in feedComment:
+                    commentLike = CommentsLike.query.filter(CommentsLike.id_comment==row.id)
+                    commentBy = Users.query.get(row['id_user'])
+                    comment = marshal(row, Comments.response_field)
+                    CommentLikes = []
+                    for rows in commentLike:
+                        commentLikes = marshal(rows, CommentsLike.response_field)
+                        CommentLikes.append(commentLikes)
+                    comment['like'] = CommentLikes
+                    comment['comment_by'] = commentBy
+                    rowComment.append(comment)
+
+                feeds['user'] = marshal(users, Users.response_field)
+                feeds['like'] = rowFeedLike
+                feeds['total_likes'] = len(rowFeedLike)
+                feeds['comment'] = rowComment
+                feeds['total_comment'] = len(rowComment)
+                # return feeds, 200, {'Content_type' : 'application/json'}
+
+                bookmarks['feed_content'] = feeds
                 rows.append(bookmarks)
             return rows, 200, {'Content_type' : 'application/json'}
+
         else:
             qry = Bookmark.query.get(id_bookmark)
             if qry is not None:
                 bookmarks = marshal(qry, Bookmark.response_field)
-                feeds = Feeds.query.get(qry.id_feed)
-                bookmarks['feed'] = marshal(feeds, Feeds.response_field)
+                # feeds = Feeds.query.get(qry.id_feed)
+                # bookmarks['feed'] = marshal(feeds, Feeds.response_field)
+                feedQry = Feeds.query.get(qry.id_feed)
+            
+                feeds = marshal(feedQry, Feeds.response_field)
+                users = Users.query.get(feedQry.id_user)
+                feedLike = FeedLike.query.filter(FeedLike.id_feed == feedQry.id_feed)
+                rowFeedLike = []
+                for row in feedLike:
+                    feedlike = marshal(row, FeedLike.response_field)
+                    rowFeedLike.append(feedlike)
+                feedComment = Comments.query.filter(Comments.id_feed==feedQry.id_feed)
+                rowComment = []
+                for row in feedComment:
+                    commentLike = CommentsLike.query.filter(CommentsLike.id_comment==row.id)
+                    commentBy = Users.query.get(row['id_user'])
+                    comment = marshal(row, Comments.response_field)
+                    CommentLikes = []
+                    for rows in commentLike:
+                        commentLikes = marshal(rows, CommentsLike.response_field)
+                        CommentLikes.append(commentLikes)
+                    comment['like'] = CommentLikes
+                    comment['comment_by'] = commentBy
+                    rowComment.append(comment)
+
+                feeds['user'] = marshal(users, Users.response_field)
+                feeds['like'] = rowFeedLike
+                feeds['total_likes'] = len(rowFeedLike)
+                feeds['comment'] = rowComment
+                feeds['total_comment'] = len(rowComment)
+                bookmarks['feed_content'] = feeds
+
                 users = Users.query.get(qry.id_user)
                 bookmarks['user'] = marshal(users, Users.response_field)
                 return bookmarks, 200, {'Content_type' : 'application/json'}
