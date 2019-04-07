@@ -97,13 +97,18 @@ class FeedResource(Resource):
                     commentLike = CommentsLike.query.filter(CommentsLike.id_comment==row.id)
                     comment = marshal(row, Comments.response_field)
                     CommentLikes = []
+                    commentBy = Users.query.get(row.id_user)
+                    commentBy = marshal(commentBy, Users.response_field)
                     for rowed in commentLike:
                         commentLikes = marshal(rowed, CommentsLike.response_field)
                         CommentLikes.append(commentLikes)
                     comment['like'] = CommentLikes
+                    comment['total_like_comment'] = len(CommentLikes)
+                    comment['comment_by'] = commentBy
                     rowComment.append(comment)
                 feeds['user'] = marshal(users, Users.response_field)
                 feeds['like'] = rowFeedLike
+                feeds['total_like_feed'] = len(rowFeedLike)
                 feeds['comment'] = rowComment
                 rows.append(feeds)
             return rows, 200, {'Content_type' : 'application/json'}
@@ -121,12 +126,14 @@ class FeedResource(Resource):
                 rowComment = []
                 for row in feedComment:
                     commentLike = CommentsLike.query.filter(CommentsLike.id_comment==row.id)
+                    commentBy = Users.query.get(row['id_user'])
                     comment = marshal(row, Comments.response_field)
                     CommentLikes = []
                     for rows in commentLike:
                         commentLikes = marshal(rows, CommentsLike.response_field)
                         CommentLikes.append(commentLikes)
                     comment['like'] = CommentLikes
+                    comment['comment_by'] = commentBy
                     rowComment.append(comment)
 
                 feeds['user'] = marshal(users, Users.response_field)
