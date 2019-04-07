@@ -52,7 +52,7 @@ class BookmarkResources(Resource):
             #     bookmarks['user'] = marshal(users, Users.response_field)
             #     rows.append(bookmarks)
             # return rows, 200, {'Content_type' : 'application/json'}
-            qry = Bookmark.query
+            qry = Bookmark.query.filter(Bookmark.id_user == jwtClaims['id'])
 
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
