@@ -5,7 +5,7 @@ from . import *
 from blueprints import db
 from blueprints.users import *
 from blueprints.farm import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 bp_analyze = Blueprint('analyze', __name__)
 api = Api(bp_analyze)
@@ -100,15 +100,37 @@ class Analyze(db.Model):
 class AnalyzeResource(Resource):
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('jenis_tanaman', location='json')
+        parser.add_argument('p', type = int, location = 'args', default = 1)
+        parser.add_argument('rp', type = int, location = 'args', default = 20)
+        parser.add_argument('jenis_tanaman', location='args')
         args = parser.parse_args()
 
+        offsets = (args['p'] * args['rp']) - args['rp']
         analyze_qry = Analyze.query
 
         if args['jenis_tanaman'] is not None:
-            analyze_qry = analyze_qry.filter(Analyze.jenis_tanaman == args['jenis_tanaman']).first()
+            dates = [30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18 ,17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+            output = []
+            output_dates = []
+            output_luas_tanah = []
+            output_avg_panen = []
+            for date in dates:
+                analyze_qry = Analyze.query
+                yesterday = datetime.now().date() + timedelta(days=-date)
+                output_dates.append(str(yesterday))
+                analyze_qry = analyze_qry.filter(Analyze.jenis_tanaman == args['jenis_tanaman']).filter(Analyze.created_at.like("%"+str(yesterday)+"%")).order_by(Analyze.id.desc()).first()
+                output.append(analyze_qry)
 
-        return marshal(analyze_qry, Analyze.response_field), 200, {'Content_type' : 'application/json'}
+                if analyze_qry is not None:
+                    output_luas_tanah.append(analyze_qry.luas_tanah)
+                    output_avg_panen.append(analyze_qry.avg_panen)
+                else:
+                    output_luas_tanah.append(0)
+                    output_avg_panen.append(0)
 
+        return {'dates': output_dates, 'luas_tanah': output_luas_tanah, 'avg_panen': output_avg_panen, 'data': marshal(output, Analyze.response_field)}, 200, {'Content_type' : 'application/json'}
+
+    def options(self):
+        return {}, 200
 
 api.add_resource(AnalyzeResource, '')
