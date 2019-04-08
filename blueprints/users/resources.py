@@ -249,8 +249,8 @@ class AnotherUsersProfile(Resource):
             rows = []
             for row in qry.limit(args['rp']).offset(offsets).all():
                 users = marshal(row, Users.response_field)
-                users = Users.query.get(row.id_user)
-                users['user'] = marshal(users, Users.response_field)
+                # users = Users.query.get(row.id)
+                # users['user'] = marshal(users, Users.response_field)
                 rows.append(users)
             return rows, 200, {'Content_type' : 'application/json'}
         
@@ -264,4 +264,4 @@ class AnotherUsersProfile(Resource):
 
 api.add_resource(UsersRegister, '/register')
 api.add_resource(UsersProfile, '/profile', '/profile/<int:id>')
-api.add_resource(AnotherUsersProfile, '/profile', '/userprofile/<int:id>')
+api.add_resource(AnotherUsersProfile, '/userprofile', '/userprofile/<int:id>')
