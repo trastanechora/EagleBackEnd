@@ -178,6 +178,46 @@ class FarmResource(Resource):
                 qry.deskripsi = args['description']
 
             if args['plant_type'] is not None:
+
+                if args['plant_type'] == 'jagung':
+                    kilogram_per_hektar = 2655
+                if args['plant_type'] == 'kacang hijau':
+                    kilogram_per_hektar = 594
+                if args['plant_type'] == 'kacang tanah':
+                    kilogram_per_hektar = 572
+                if args['plant_type'] == 'kedelai':
+                    kilogram_per_hektar = 625
+                if args['plant_type'] == 'padi':
+                    kilogram_per_hektar = 2494
+                if args['plant_type'] == 'ubi':
+                    kilogram_per_hektar = 6884
+                if args['plant_type'] == 'bawang merah':
+                    kilogram_per_hektar = 4723
+                if args['plant_type'] == 'bawang putih':
+                    kilogram_per_hektar = 4619
+                if args['plant_type'] == 'cabai':
+                    kilogram_per_hektar = 3496
+                if args['plant_type'] == 'kacang panjang':
+                    kilogram_per_hektar = 3452
+                if args['plant_type'] == 'kangkung':
+                    kilogram_per_hektar = 2944
+                if args['plant_type'] == 'kentang':
+                    kilogram_per_hektar = 7826
+                if args['plant_type'] == 'ketimun':
+                    kilogram_per_hektar = 5423
+                if args['plant_type'] == 'kubis':
+                    kilogram_per_hektar = 8068
+                if args['plant_type'] == 'lobak':
+                    kilogram_per_hektar = 3732
+                if args['plant_type'] == 'sawi':
+                    kilogram_per_hektar = 5216
+                if args['plant_type'] == 'terung':
+                    kilogram_per_hektar = 6196
+                if args['plant_type'] == 'tomat':
+                    kilogram_per_hektar = 8794
+                if args['plant_type'] == 'wortel':
+                    kilogram_per_hektar = 8906
+                
                 if qry.plant_type != "":
                     created_at = datetime.now()
                     updated_at = datetime.now()
@@ -186,9 +226,11 @@ class FarmResource(Resource):
                     if before_analyze_qry is not None:
                         subs_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).order_by(Analyze.id.desc()).first()
                         subs_analyze_qry.luas_tanah -= qry.farm_size
-
                         new_size = before_analyze_qry.luas_tanah + qry.farm_size
-                        analyze = Analyze(None, args['plant_type'], new_size, 0, 0, created_at, updated_at)
+                        
+                        total_berat_kg = (qry.farm_size * kilogram_per_hektar / 10000)
+                        new_production = before_analyze_qry.avg_panen + total_berat_kg
+                        analyze = Analyze(None, args['plant_type'], new_size, new_production, 0, created_at, updated_at)
                         
                         db.session.add(analyze)
                         db.session.commit()
@@ -197,7 +239,8 @@ class FarmResource(Resource):
                     else:
                         subs_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).order_by(Analyze.id.desc()).first()
                         subs_analyze_qry.luas_tanah -= qry.farm_size
-                        analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0, created_at, updated_at)
+                        total_berat_kg = (qry.farm_size * kilogram_per_hektar / 10000)
+                        analyze = Analyze(None, args['plant_type'], qry.farm_size, total_berat_kg, 0, created_at, updated_at)
                         db.session.add(analyze)
                         db.session.commit()
 
@@ -208,24 +251,17 @@ class FarmResource(Resource):
                     before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).order_by(Analyze.id.desc()).first()
                     if before_analyze_qry is not None:
                         new_size = before_analyze_qry.luas_tanah + qry.farm_size
-                        analyze = Analyze(None, args['plant_type'], new_size, 0, 0, created_at, updated_at)
+                        total_berat_kg = (qry.farm_size * kilogram_per_hektar / 10000)
+                        new_production = before_analyze_qry.avg_panen + total_berat_kg
+                        analyze = Analyze(None, args['plant_type'], new_size, new_production, 0, created_at, updated_at)
                         db.session.add(analyze)
                         db.session.commit()
 
                     else:
-                        analyze = Analyze(None, args['plant_type'], qry.farm_size, 0, 0, created_at, updated_at)
+                        total_berat_kg = (qry.farm_size * kilogram_per_hektar / 10000)
+                        analyze = Analyze(None, args['plant_type'], qry.farm_size, total_berat_kg, 0, created_at, updated_at)
                         db.session.add(analyze)
                         db.session.commit()
-
-                
-                # else:
-                    # if qry.plant_type != "":
-                    #     before_analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == qry.plant_type).first()
-                    #     before_analyze_qry.luas_tanah -= qry.farm_size
-
-                    # analyze_qry = Analyze.query.filter(Analyze.jenis_tanaman == args['plant_type']).first()
-                    # analyze_qry.luas_tanah += qry.farm_size
-                    # db.session.commit()
 
                 qry.plant_type = args['plant_type']
             
