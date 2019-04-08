@@ -110,6 +110,7 @@ class FeedResource(Resource):
                 feeds['like'] = rowFeedLike
                 feeds['total_like_feed'] = len(rowFeedLike)
                 feeds['comment'] = rowComment
+                feeds['total_comment'] = len(rowComment)
                 rows.append(feeds)
             return rows, 200, {'Content_type' : 'application/json'}
         else:
