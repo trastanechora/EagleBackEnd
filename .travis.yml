@@ -8,7 +8,8 @@ env:
   - DOCKER_IMAGE_NAME="project_lahanku"
   - DOCKER_HUB_ORG="trastanechora"
 before_script:
-- openssl aes-256-cbc -K $encrypted_7149eff3fd26_key -iv $encrypted_7149eff3fd26_iv -in deploy_rsa.enc -out deploy_rsa -d
+- openssl aes-256-cbc -K $encrypted_5669591248fd_key -iv $encrypted_5669591248fd_iv
+  -in deploy_rsa.enc -out deploy_rsa -d
 - eval "$(ssh-agent -s)"
 - chmod 600 deploy_rsa
 - ssh-add deploy_rsa
@@ -26,6 +27,4 @@ after_script:
 - ssh -v -i deploy_rsa $SSH_USER@$SSH_IP DIR=$ROOT_DIR 'bash -s' < deploy.sh
 before_install:
 - openssl aes-256-cbc -K $encrypted_5669591248fd_key -iv $encrypted_5669591248fd_iv
-  -in deploy_rsa.enc -out deploy_rsa -d
-- openssl aes-256-cbc -K $encrypted_7ca8229f15ae_key -iv $encrypted_7ca8229f15ae_iv
   -in deploy_rsa.enc -out deploy_rsa -d
